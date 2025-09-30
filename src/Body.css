@@ -1,0 +1,310 @@
+/* Ensure this matches your navbar height */
+main {
+  padding-top: 72px; /* adjust if navbar height differs */
+}
+
+.site-section {
+  min-height: 100vh;
+  padding: 60px 16px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.section-inner {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.section-inner h2 {
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
+
+.section-inner p {
+  color: #555;
+  line-height: 1.6;
+}
+
+/* Hero section */
+.hero-section {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.hero-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+.hero-overlay {
+  z-index: 1;
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: white;
+  padding: 20px;
+   user-select: none;
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE/Edge */
+}
+
+.hero-text-bg {
+  background: rgba(0, 0, 0, 0.5); /* darker overlay instead of light gray */
+  padding: 30px 50px;
+  border-radius: 10px;
+}
+
+.hero-overlay h1 {
+  font-size: 3rem;
+  margin: 0;
+  color: #ff4d4d;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.7); /* adds depth */
+}
+
+.hero-overlay p {
+  font-size: 1.5rem;
+  margin-top: 1rem;
+  color: #ffffff; /* clean white for subtitle */
+  text-shadow: 1px 1px 6px rgba(0,0,0,0.7);
+}
+
+/* About section */
+.about-section {
+  min-height: 65vh; /* 60–70vh */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+  background-color: #111; /* dark background to match theme */
+  color: white;
+}
+
+.about-container {
+  display: flex;
+  gap: 50px;
+  max-width: 1200px;
+  width: 100%;
+  flex-wrap: wrap; /* allows responsive stacking */
+  align-items: center;
+}
+
+.about-image {
+  flex: 1 1 45%;
+}
+
+.about-image img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.about-content {
+  flex: 1 1 45%;
+}
+
+.about-content h2 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  color: #ff4d4d; /* dark red heading to match theme */
+}
+
+.about-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px 30px;
+}
+
+.about-list li {
+  position: relative;
+  padding-left: 25px;
+  font-size: 1.2rem;
+}
+
+.about-list li::before {
+  content: "✔"; /* check mark */
+  position: absolute;
+  left: 0;
+  color: #ff4d4d; /* red checkmark */
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .about-container {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .about-list {
+    grid-template-columns: 1fr; /* stack items vertically */
+  }
+}
+
+
+/* Why Choose Us Section */
+.why-section {
+  padding: 60px 20px;
+  background-color: #2a2a2a; /* grayish background for the section */
+  color: white;
+}
+
+.why-container {
+  display: flex;
+  gap: 20px; /* reduce gap */
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Each column with compact black background */
+.why-item {
+  flex: 1 1 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 15px;
+  background-color: #111; /* blackish background */
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.why-image img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.why-text h3 {
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+  color: #ff4d4d;
+}
+
+.why-text p {
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+  .why-container {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .why-item {
+    flex: 1 1 100%;
+  }
+}
+
+/* Packages Section */
+.packages-section {
+  padding: 80px 20px;
+  background-color: #2a2a2a; /* grayish section background */
+  color: white;
+}
+
+.section-title {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 50px;
+  color: #f33434;
+}
+
+.packages-container {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Card styling */
+.package-card {
+  background-color: #111;
+  padding: 25px;
+  border-radius: 10px;
+  flex: 1 1 300px;
+  max-width: 350px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.package-card:hover {
+  transform: scale(1.05); /* slightly bigger */
+  box-shadow: 0 8px 25px rgba(0,0,0,0.7); /* stronger shadow */
+}
+
+
+.package-card h3 {
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+  color: #f33434;
+}
+
+.package-card .price {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  color: #ff4d4d;
+  font-weight: bold;
+}
+
+/* Red checklist for package features */
+.package-list {
+  list-style: none;
+  padding: 0;
+}
+
+.package-list li {
+  position: relative;
+  padding-left: 25px;
+  margin-bottom: 10px;
+}
+
+.package-list li::before {
+  content: "✔";
+  position: absolute;
+  left: 0;
+  color: #ff4d4d;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .packages-container {
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+  }
+}
+
+.price {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.price-currency,
+.price-unit {
+  color: white;
+}
+
+.price-amount {
+  color: #ff4d4d; /* red amount */
+  margin: 0 4px; /* small spacing around amount */
+}

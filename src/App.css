@@ -1,0 +1,26 @@
+/* App.css */
+
+/* Make root full width */
+#root {
+  margin: 0;
+  padding: 0;
+  max-width: 100%;
+  text-align: center;
+}
+
+/* Reset body for consistency */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #111; /* optional: dark background */
+  color: white;
+}
+
+/* Optional card styling if needed */
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}

@@ -1,0 +1,148 @@
+/* Navbar.css */
+
+.navbar {
+  background-color: #111; /* blackish background */
+  padding: 12px 24px;
+  color: white;
+  font-family: Arial, sans-serif;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+
+/* Inner container */
+.navbar-inner {
+  display: flex;
+  justify-content: center; /* center everything */
+  align-items: center;
+  gap: 40px;
+}
+
+/* Replace text with logo */
+.brand img {
+  height: 80px;
+  width: auto;
+  display: block;
+}
+
+/* Desktop links */
+.links-desktop {
+  display: flex;
+  gap: 24px;
+}
+
+
+.nav-btn,
+.mobile-link {
+  outline: none;
+}
+
+.nav-btn:focus,
+.mobile-link:focus {
+  outline: none;
+  border: none;
+}
+
+.nav-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.nav-btn:hover {
+  color: darkred; /* dark red hover */
+}
+
+.nav-btn.active {
+  color: #b22222; /* firebrick (dark red highlight) */
+  font-weight: bold;
+}
+
+/* Hamburger (mobile only) */
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.hamburger-line {
+  width: 25px;
+  height: 3px;
+  background: white;
+  display: block;
+  position: relative;
+  transition: 0.3s ease-in-out;
+}
+
+.hamburger-line::before,
+.hamburger-line::after {
+  content: "";
+  position: absolute;
+  width: 25px;
+  height: 3px;
+  background: white;
+  left: 0;
+  transition: 0.3s ease-in-out;
+}
+
+.hamburger-line::before {
+  top: -8px;
+}
+
+.hamburger-line::after {
+  top: 8px;
+}
+
+.hamburger-line.open {
+  background: transparent;
+}
+
+.hamburger-line.open::before {
+  transform: rotate(45deg);
+  top: 0;
+}
+
+.hamburger-line.open::after {
+  transform: rotate(-45deg);
+  top: 0;
+}
+
+/* Mobile menu */
+.mobile-menu {
+  display: flex;
+  flex-direction: column;
+  background-color: #111;
+  padding: 12px;
+}
+
+.mobile-link {
+  background: none;
+  border: none;
+  color: white;
+  padding: 12px 0;
+  text-align: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.mobile-link.active {
+  color: #b22222;
+  font-weight: bold;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .links-desktop {
+    display: none;
+  }
+  .hamburger {
+    display: block;
+  }
+}
