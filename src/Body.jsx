@@ -1,5 +1,10 @@
 import React from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination } from "swiper/modules";
 import "./Body.css";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 const sections = [
   { id: "home", title: "Əsas Səhifə" },
@@ -9,6 +14,39 @@ const sections = [
   { id: "trainers", title: "Məşqçilər" },
   { id: "certificates", title: "Sertifikatlar" },
   { id: "contact", title: "Əlaqə" },
+];
+
+const certificates = [
+  {
+    id: 1,
+    img: "https://www.st-pilates.az/uploads/FatimaCert.jpg",
+    date: "12.05.2023",
+    desc: "Awarded for outstanding performance in robotics",
+  },
+  {
+    id: 2,
+    img: "https://www.st-pilates.az/uploads/372500GE1112841-ingilizce.jpg",
+    date: "24.11.2022",
+    desc: "Certified participation in AI workshop",
+  },
+  {
+    id: 3,
+    img: "https://www.st-pilates.az/uploads/Converted%20File.jpg",
+    date: "31.08.2021",
+    desc: "Completed advanced Flutter development course",
+  },
+  {
+    id: 4,
+    img: "https://www.st-pilates.az/uploads/FatimaCert.jpg",
+    date: "19.03.2024",
+    desc: "Completed advanced Flutter development course",
+  },
+  {
+    id: 5,
+    img: "https://www.st-pilates.az/uploads/372500GE1112841-ingilizce.jpg",
+    date: "05.06.2023",
+    desc: "Completed advanced Flutter development course",
+  },
 ];
 
 export default function Body() {
@@ -26,7 +64,7 @@ export default function Body() {
         />
         <div className="hero-overlay">
           <div className="hero-text-bg">
-            <h1>Pilates'ə Xoş Gəlmisiniz</h1>
+            <h1>ST Pilates'ə Xoş Gəlmisiniz</h1>
             <p>Bədəninizə və sağlamlığınıza dəyər verin</p>
           </div>
         </div>
@@ -164,26 +202,154 @@ export default function Body() {
         </div>
       </section>
 
-      {/* Map the remaining normal sections */}
-      {sections
-        .filter(
-          (s) =>
-            s.id !== "home" &&
-            s.id !== "about" &&
-            s.id !== "why" &&
-            s.id !== "packages"
-        )
-        .map((s) => (
-          <section id={s.id} key={s.id} className="site-section">
-            <div className="section-inner">
-              <h2>{s.title}</h2>
+      {/* Trainers section */}
+      <section id="trainers" className="site-section trainers-section">
+        <h2>Məşqçilərimiz</h2>
+        <div className="trainers-container">
+          <div
+            className="trainer-card"
+            style={{
+              backgroundImage:
+                "url('https://www.st-pilates.az/uploads/1111.jpg')",
+            }}
+          >
+            <div className="trainer-overlay">
+              <p>Professional Məşqçi</p>
+              <h3>Murad Əliyev</h3>
+              <div className="trainer-socials">
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <i className="fab fa-instagram"></i>
+                </a>
+                <a href="https://facebook.com" target="_blank" rel="noreferrer">
+                  <i className="fab fa-facebook"></i>
+                </a>
+                <a href="https://tiktok.com" target="_blank" rel="noreferrer">
+                  <i className="fab fa-tiktok"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div
+            className="trainer-card"
+            style={{
+              backgroundImage:
+                "url('https://www.st-pilates.az/uploads/1111.jpg')",
+            }}
+          >
+            <div className="trainer-overlay">
+              <p>Professional Məşqçi</p>
+              <h3>Aysel Məmmədova</h3>
+              <div className="trainer-socials">
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <i className="fab fa-instagram"></i>
+                </a>
+                <a href="https://facebook.com" target="_blank" rel="noreferrer">
+                  <i className="fab fa-facebook"></i>
+                </a>
+                <a href="https://tiktok.com" target="_blank" rel="noreferrer">
+                  <i className="fab fa-tiktok"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      {/* Certificates Section */}
+      <section id="certificates" className="certificates">
+        <h2 className="certificates-title">Sertifikatlar</h2>
+        <Swiper
+          modules={[Navigation, Pagination]}
+          slidesPerView={1}
+          spaceBetween={20}
+          loop={true}
+          pagination={{ clickable: true }}
+          navigation
+          breakpoints={{
+            768: { slidesPerView: 2 },
+            1024: { slidesPerView: 3 },
+          }}
+        >
+          {certificates.map((cert) => (
+            <SwiperSlide key={cert.id}>
+              <div className="certificate-card">
+                <div className="certificate-img">
+                  <img src={cert.img} alt="Certificate" />
+                </div>
+                <div className="certificate-info">
+                  <p className="date">{cert.date}</p>
+                  <p className="title">Sertifikat</p>
+                  <p className="desc">{cert.desc}</p>
+                </div>
+              </div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </section>
+      {/* Contact Section */}
+      <section id="contact" className="contact-section">
+        <h2 className="contact-title">Əlaqə Saxla</h2>
+        <div className="contact-grid">
+          {/* Left Side */}
+          <div className="contact-left">
+            <img
+              src="https://i.hizliresim.com/91xwdfz.png"
+              alt="ST Pilates Logo"
+              className="contact-logo"
+            />
+            <div className="contact-socials">
+              <a href="https://instagram.com" target="_blank" rel="noreferrer">
+                <i className="fab fa-instagram"></i>
+              </a>
+              <a href="https://facebook.com" target="_blank" rel="noreferrer">
+                <i className="fab fa-facebook"></i>
+              </a>
+              <a href="https://tiktok.com" target="_blank" rel="noreferrer">
+                <i className="fab fa-tiktok"></i>
+              </a>
+              <a
+                href="https://wa.me/994997332626"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <i className="fab fa-whatsapp"></i>
+              </a>
+            </div>
+          </div>
+
+          {/* Right Side */}
+          <div className="contact-right">
+            <div className="contact-hours">
+              <h3>İş saatları</h3>
+              <p>Həftə içi : 09:00 - 20:00</p>
+              <p>Şənbə : 09:00 - 20:00</p>
+              <p>Bazar : Fərdi dərslər</p>
+            </div>
+
+            <div className="contact-info">
+              <h3>Əlaqə</h3>
+              <p>+994 99 733 26 26</p>
+              <p>+994 99 733 26 26</p>
+              <p>office@st-pilates.az</p>
               <p>
-                Sample content for {s.title}. Replace this with your app
-                content.
+                8 Noyabr prospekti , Nargilə dairəsi, Blue Office C blok 18ci
+                mərtəbə
               </p>
             </div>
-          </section>
-        ))}
+          </div>
+        </div>
+      </section>
+      {/* Footer */}
+      <footer className="site-footer">
+  <p>© 2025 ST Pilates. All rights reserved.</p>
+</footer>
     </main>
   );
 }

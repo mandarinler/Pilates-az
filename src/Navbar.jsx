@@ -45,7 +45,7 @@ export default function Navbar() {
     <nav className="navbar">
       <div className="navbar-inner">
         <div className="brand">
-          <img src="https://i.hizliresim.com/9jtkfwz.png" alt="Logo" />
+          <img src="https://i.hizliresim.com/91xwdfz.png" alt="Logo" />
         </div>
         <div className="links-desktop">
           {sections.map((s) => (
