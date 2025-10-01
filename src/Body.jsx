@@ -89,7 +89,7 @@ export default function Body() {
       </section>
       {/* Why Pilates Section */}
       <section id="why" className="why-section">
-        <h2 className="section-title">Üstünlüklərimiz</h2>
+        <h2 className="why-title">Üstünlüklərimiz</h2>
 
         <div className="why-container">
           {/* Body Building */}
@@ -204,7 +204,7 @@ export default function Body() {
 
       {/* Trainers section */}
       <section id="trainers" className="site-section trainers-section">
-        <h2>Məşqçilərimiz</h2>
+        <h2 className="trainers-title">Məşqçilərimiz</h2>
         <div className="trainers-container">
           <div
             className="trainer-card"
