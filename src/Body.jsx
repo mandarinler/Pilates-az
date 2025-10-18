@@ -5,6 +5,9 @@ import "./Body.css";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "./firebase";
+import { useState, useEffect } from "react";
 
 const sections = [
   { id: "home", title: "Əsas Səhifə" },
@@ -20,36 +23,55 @@ const certificates = [
   {
     id: 1,
     img: "https://www.st-pilates.az/uploads/FatimaCert.jpg",
-    date: "12.05.2023",
-    desc: "Awarded for outstanding performance in robotics",
+    date: "12.05.2017",
+    desc: "Peşəkar Fitnes Mərkəzində tam zamanlı kurs",
   },
   {
     id: 2,
     img: "https://www.st-pilates.az/uploads/372500GE1112841-ingilizce.jpg",
-    date: "24.11.2022",
-    desc: "Certified participation in AI workshop",
+    date: "11.05.2024",
+    desc: "Global Enstitü Pilates təlimi sertifikatı",
   },
   {
     id: 3,
     img: "https://www.st-pilates.az/uploads/Converted%20File.jpg",
-    date: "31.08.2021",
-    desc: "Completed advanced Flutter development course",
-  },
-  {
-    id: 4,
-    img: "https://www.st-pilates.az/uploads/FatimaCert.jpg",
-    date: "19.03.2024",
-    desc: "Completed advanced Flutter development course",
-  },
-  {
-    id: 5,
-    img: "https://www.st-pilates.az/uploads/372500GE1112841-ingilizce.jpg",
-    date: "05.06.2023",
-    desc: "Completed advanced Flutter development course",
+    date: "12.01.2024",
+    desc: "Duruşun analizi və korrektiv məşq proqramı",
   },
 ];
 
 export default function Body() {
+  const [packages, setPackages] = useState([]);
+  const [trainers, setTrainers] = useState([]);
+  // Trainers
+  useEffect(() => {
+    const fetchTrainers = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "trainers"));
+        const data = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        data.sort((a, b) => a.order - b.order); 
+        setTrainers(data);
+      } catch (error) {
+        console.error("Error fetching trainers:", error);
+      }
+    };
+
+    fetchTrainers();
+  }, []);
+  // Packages
+  useEffect(() => {
+    const fetchPackages = async () => {
+      const querySnapshot = await getDocs(collection(db, "packages"));
+      const data = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      data.sort((a, b) => a.order - b.order);
+      setPackages(data);
+    };
+    fetchPackages();
+  }, []);
+
   return (
     <main>
       {/* Hero Section */}
@@ -118,7 +140,7 @@ export default function Body() {
               />
             </div>
             <div className="why-text">
-              <h3>Gym for Men</h3>
+              <h3>Kişilər üçün GYM</h3>
               <p>
                 Kişilər üçün xüsusi proqramlar güc və dözümlülüyü artırmaq
                 məqsədilə hazırlanmışdır. Sağlam bədən quruluşunu dəstəkləyir.
@@ -135,7 +157,7 @@ export default function Body() {
               />
             </div>
             <div className="why-text">
-              <h3>Gym for Women</h3>
+              <h3>Qadınlar üçün GYM</h3>
               <p>
                 Qadınlar üçün nəzərdə tutulmuş Pilates proqramları bədənin
                 elastikliyini və forma almasını təmin edir, həmçinin stressi
@@ -149,56 +171,22 @@ export default function Body() {
       {/* Packages Section */}
       <section id="packages" className="packages-section">
         <h2 className="section-title">Paketlərimiz</h2>
-
         <div className="packages-container">
-          {/* Standart Paket */}
-          <div className="package-card">
-            <h3>Standart Paket</h3>
-            <p className="price">
-              <span className="price-currency">₼</span>
-              <span className="price-amount">180</span>
-              <span className="price-unit">/Ay</span>
-            </p>
-
-            <ul className="package-list">
-              <li>12 məşq</li>
-              <li>Həftədə 3 dəfə olmaqla</li>
-              <li>Professional məşqçi</li>
-            </ul>
-          </div>
-
-          {/* Ekonom Paket */}
-          <div className="package-card">
-            <h3>Ekonom Paket</h3>
-            <p className="price">
-              <span className="price-currency">₼</span>
-              <span className="price-amount">120</span>
-              <span className="price-unit">/Ay</span>
-            </p>
-            <ul className="package-list">
-              <li>8 dərs</li>
-              <li>Həftədə 2 dəfə olmaqla</li>
-              <li>Professional məşqçi</li>
-            </ul>
-          </div>
-
-          {/* Massaj */}
-          <div className="package-card">
-            <h3>Massaj</h3>
-
-            <p className="price">
-              <span className="price-currency">₼</span>
-              <span className="price-amount">25</span>
-              <span className="price-unit">/Seans</span>
-            </p>
-            <ul className="package-list">
-              <li>G8 vibro aparat</li>
-              <li>Müalicəvi massaj</li>
-              <li>Anti cellulite massaj</li>
-              <li>BM massaj</li>
-              <li>Relaks massaj</li>
-            </ul>
-          </div>
+          {packages.map((pkg) => (
+            <div key={pkg.id} className="package-card">
+              <h3>{pkg.name}</h3>
+              <p className="price">
+                <span className="price-currency">₼</span>
+                <span className="price-amount">{pkg.price}</span>
+                <span className="price-unit">/{pkg.time}</span>
+              </p>
+              <ul className="package-list">
+                {pkg.features.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -206,61 +194,31 @@ export default function Body() {
       <section id="trainers" className="site-section trainers-section">
         <h2 className="trainers-title">Məşqçilərimiz</h2>
         <div className="trainers-container">
+        {trainers.map((trainer) => (
           <div
+            key={trainer.id}
             className="trainer-card"
-            style={{
-              backgroundImage:
-                "url('https://www.st-pilates.az/uploads/1111.jpg')",
-            }}
+            style={{ backgroundImage: `url(https://i.hizliresim.com/h1lifh4.jpg)` }}
           >
             <div className="trainer-overlay">
               <p>Professional Məşqçi</p>
-              <h3>Murad Əliyev</h3>
+              <h3>{trainer.name}</h3>
               <div className="trainer-socials">
-                <a
-                  href="https://instagram.com"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <i className="fab fa-instagram"></i>
-                </a>
-                <a href="https://facebook.com" target="_blank" rel="noreferrer">
-                  <i className="fab fa-facebook"></i>
-                </a>
-                <a href="https://tiktok.com" target="_blank" rel="noreferrer">
-                  <i className="fab fa-tiktok"></i>
-                </a>
+                {Object.entries(trainer.socials).map(([platform, url]) => (
+                  <a
+                    key={platform}
+                    href={url}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <i className={`fab fa-${platform}`}></i>
+                  </a>
+                ))}
               </div>
             </div>
           </div>
-          <div
-            className="trainer-card"
-            style={{
-              backgroundImage:
-                "url('https://www.st-pilates.az/uploads/1111.jpg')",
-            }}
-          >
-            <div className="trainer-overlay">
-              <p>Professional Məşqçi</p>
-              <h3>Aysel Məmmədova</h3>
-              <div className="trainer-socials">
-                <a
-                  href="https://instagram.com"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <i className="fab fa-instagram"></i>
-                </a>
-                <a href="https://facebook.com" target="_blank" rel="noreferrer">
-                  <i className="fab fa-facebook"></i>
-                </a>
-                <a href="https://tiktok.com" target="_blank" rel="noreferrer">
-                  <i className="fab fa-tiktok"></i>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
+        ))}
+      </div>
       </section>
       {/* Certificates Section */}
       <section id="certificates" className="certificates">
@@ -348,8 +306,8 @@ export default function Body() {
       </section>
       {/* Footer */}
       <footer className="site-footer">
-  <p>© 2025 ST Pilates. All rights reserved.</p>
-</footer>
+        <p>© 2025 ST Pilates. All rights reserved.</p>
+      </footer>
     </main>
   );
 }
