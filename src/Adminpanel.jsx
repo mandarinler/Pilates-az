@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth, db } from "./firebase";
-import "./AdminPanel.css";
+import "./Adminpanel.css";
 
 const AdminPanel = () => {
   const [user, setUser] = useState(null);
