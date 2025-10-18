@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
+import { collection, getDocs, updateDoc, doc, addDoc, deleteDoc } from "firebase/firestore";
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth, db } from "./firebase";
 import "./Adminpanel.css";
@@ -159,6 +159,61 @@ const AdminPanel = () => {
     }
   };
 
+  // Delete item from Firebase
+  const handleDelete = async (type, id) => {
+    if (window.confirm(`Are you sure you want to delete this ${type.slice(0, -1)}?`)) {
+      try {
+        await deleteDoc(doc(db, type, id));
+        
+        // Update local state after deleting
+        if (type === "trainers") {
+          setTrainers(trainers.filter(t => t.id !== id));
+        } else {
+          setPackages(packages.filter(p => p.id !== id));
+        }
+      } catch (err) {
+        console.error("Error deleting data:", err);
+      }
+    }
+  };
+
+  // Create new item
+  const handleCreate = async (type) => {
+    try {
+      let newItem;
+      if (type === "packages") {
+        newItem = {
+          name: "New Package",
+          price: "0",
+          time: "1 hour",
+          order: packages.length + 1,
+          features: ["Feature 1", "Feature 2"]
+        };
+      } else {
+        newItem = {
+          name: "New Trainer",
+          order: trainers.length + 1,
+          socials: {}
+        };
+      }
+
+      const docRef = await addDoc(collection(db, type), newItem);
+      
+      // Update local state after creating
+      if (type === "trainers") {
+        setTrainers([...trainers, { id: docRef.id, ...newItem }]);
+      } else {
+        setPackages([...packages, { id: docRef.id, ...newItem }]);
+      }
+
+      // Automatically start editing the new item
+      setEditId(docRef.id);
+      setEditData({ id: docRef.id, ...newItem });
+    } catch (err) {
+      console.error("Error creating data:", err);
+    }
+  };
+
   if (!user) {
     return (
       <div className="login-container">
@@ -185,7 +240,10 @@ const AdminPanel = () => {
 
           {/* Packages */}
 <div className="admin-card">
-  <h2>Packages</h2>
+  <div className="card-header">
+    <h2>Packages</h2>
+    <button onClick={() => handleCreate("packages")} className="create-btn">Add New Package</button>
+  </div>
   {packages.map(pkg => (
     <div key={pkg.id} className="data-item">
       {editId === pkg.id ? (
@@ -213,12 +271,18 @@ const AdminPanel = () => {
             <button type="button" onClick={addFeature} className="add-btn">Add Feature</button>
           </div>
 
-          <button onClick={() => handleSave("packages", pkg.id)}>Save</button>
+          <div className="action-buttons">
+            <button onClick={() => handleSave("packages", pkg.id)}>Save</button>
+            <button onClick={() => handleDelete("packages", pkg.id)} className="delete-btn">Delete</button>
+          </div>
         </>
       ) : (
         <>
           <p>{pkg.name} - {pkg.price} {pkg.time}</p>
-          <button onClick={() => { setEditId(pkg.id); setEditData(pkg); }}>Edit</button>
+          <div className="action-buttons">
+            <button onClick={() => { setEditId(pkg.id); setEditData(pkg); }}>Edit</button>
+            <button onClick={() => handleDelete("packages", pkg.id)} className="delete-btn">Delete</button>
+          </div>
         </>
       )}
     </div>
@@ -227,7 +291,10 @@ const AdminPanel = () => {
 
 {/* Trainers */}
 <div className="admin-card">
-  <h2>Trainers</h2>
+  <div className="card-header">
+    <h2>Trainers</h2>
+    <button onClick={() => handleCreate("trainers")} className="create-btn">Add New Trainer</button>
+  </div>
   {trainers.map(tr => (
     <div key={tr.id} className="data-item">
       {editId === tr.id ? (
@@ -261,18 +328,24 @@ const AdminPanel = () => {
             <button type="button" onClick={addSocial} className="add-btn">Add Social Link</button>
           </div>
 
-          <button onClick={() => handleSave("trainers", tr.id)}>Save</button>
+          <div className="action-buttons">
+            <button onClick={() => handleSave("trainers", tr.id)}>Save</button>
+            <button onClick={() => handleDelete("trainers", tr.id)} className="delete-btn">Delete</button>
+          </div>
         </>
       ) : (
         <>
           <p>{tr.name}</p>
-          <button onClick={() => { 
-            setEditId(tr.id); 
-            setEditData({ 
-              ...tr, 
-              socials: migrateSocials(tr.socials) 
-            }); 
-          }}>Edit</button>
+          <div className="action-buttons">
+            <button onClick={() => { 
+              setEditId(tr.id); 
+              setEditData({ 
+                ...tr, 
+                socials: migrateSocials(tr.socials) 
+              }); 
+            }}>Edit</button>
+            <button onClick={() => handleDelete("trainers", tr.id)} className="delete-btn">Delete</button>
+          </div>
         </>
       )}
     </div>

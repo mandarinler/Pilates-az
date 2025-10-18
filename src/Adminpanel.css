@@ -110,6 +110,18 @@
     margin-bottom: 15px;
     color: #fff;
   }
+
+  /* Card header with title and create button */
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .card-header h2 {
+    margin-bottom: 0;
+  }
   
   /* Individual item container */
   .data-item {
@@ -211,6 +223,45 @@
 
   .add-btn:hover {
     background-color: #218838;
+  }
+
+  /* Action buttons container */
+  .action-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  /* Create button */
+  .create-btn {
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+  }
+
+  .create-btn:hover {
+    background-color: #218838;
+  }
+
+  /* Delete button */
+  .delete-btn {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+  }
+
+  .delete-btn:hover {
+    background-color: #c82333;
   }
 
   /* Social item styling */
