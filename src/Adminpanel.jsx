@@ -12,8 +12,8 @@ const AdminPanel = () => {
   const [trainers, setTrainers] = useState([]);
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [editId, setEditId] = useState(null); // ID of the item currently being edited
-  const [editData, setEditData] = useState({}); // Temporary store for edited data
+  const [editId, setEditId] = useState(null); 
+  const [editData, setEditData] = useState({}); 
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, setUser);
@@ -48,27 +48,23 @@ const AdminPanel = () => {
 
   const handleLogout = async () => await signOut(auth);
 
-  // Add new feature to the features array
   const addFeature = () => {
     const currentFeatures = Array.isArray(editData.features) ? editData.features : [];
     setEditData({ ...editData, features: [...currentFeatures, ''] });
   };
 
-  // Remove feature from the features array
   const removeFeature = (index) => {
     const currentFeatures = Array.isArray(editData.features) ? editData.features : [];
     const newFeatures = currentFeatures.filter((_, idx) => idx !== index);
     setEditData({ ...editData, features: newFeatures });
   };
 
-  // Add new social link to the socials object
   const addSocial = () => {
     const currentSocials = editData.socials || {};
     const socialId = `social_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     setEditData({ ...editData, socials: { ...currentSocials, [socialId]: { platform: '', url: '' } } });
   };
 
-  // Remove social link from the socials object
   const removeSocial = (socialId) => {
     const currentSocials = editData.socials || {};
     const newSocials = { ...currentSocials };
@@ -76,7 +72,6 @@ const AdminPanel = () => {
     setEditData({ ...editData, socials: newSocials });
   };
 
-  // Update social platform name
   const updateSocialPlatform = (socialId, newPlatform) => {
     const currentSocials = editData.socials || {};
     const newSocials = { ...currentSocials };
@@ -86,7 +81,6 @@ const AdminPanel = () => {
     }
   };
 
-  // Update social URL
   const updateSocialUrl = (socialId, newUrl) => {
     const currentSocials = editData.socials || {};
     const newSocials = { ...currentSocials };
@@ -96,18 +90,15 @@ const AdminPanel = () => {
     }
   };
 
-  // Migrate old socials format to new format
   const migrateSocials = (socials) => {
     if (!socials) return {};
     const migrated = {};
     Object.keys(socials).forEach(key => {
       const value = socials[key];
       if (typeof value === 'string') {
-        // Old format: { "instagram": "https://..." }
         const socialId = `social_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         migrated[socialId] = { platform: key, url: value };
       } else if (typeof value === 'object' && value.platform !== undefined) {
-        // New format: { "social_123": { platform: "instagram", url: "https://..." } }
         migrated[key] = value;
       }
     });
@@ -117,7 +108,6 @@ const AdminPanel = () => {
   // Handle input changes in edit mode
   const handleChange = (field, value, subfield = null, index = null) => {
     if (index !== null) {
-      // Updating array item (features)
       const currentArray = Array.isArray(editData[field]) ? editData[field] : [];
       const arrCopy = [...currentArray];
       arrCopy[index] = value;
@@ -132,7 +122,6 @@ const AdminPanel = () => {
   // Save to Firebase
   const handleSave = async (type, id) => {
     try {
-      // Convert socials back to simple key-value format for Firebase
       let dataToSave = { ...editData };
       if (type === "trainers" && editData.socials) {
         const simpleSocials = {};
@@ -148,7 +137,6 @@ const AdminPanel = () => {
       await updateDoc(doc(db, type, id), dataToSave);
       setEditId(null);
 
-      // Update local state after saving
       if (type === "trainers") {
         setTrainers(trainers.map(t => (t.id === id ? dataToSave : t)));
       } else {
@@ -165,7 +153,6 @@ const AdminPanel = () => {
       try {
         await deleteDoc(doc(db, type, id));
         
-        // Update local state after deleting
         if (type === "trainers") {
           setTrainers(trainers.filter(t => t.id !== id));
         } else {
@@ -199,14 +186,11 @@ const AdminPanel = () => {
 
       const docRef = await addDoc(collection(db, type), newItem);
       
-      // Update local state after creating
       if (type === "trainers") {
         setTrainers([...trainers, { id: docRef.id, ...newItem }]);
       } else {
         setPackages([...packages, { id: docRef.id, ...newItem }]);
       }
-
-      // Automatically start editing the new item
       setEditId(docRef.id);
       setEditData({ id: docRef.id, ...newItem });
     } catch (err) {
