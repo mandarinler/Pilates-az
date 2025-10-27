@@ -13,6 +13,7 @@ import {
   signOut,
 } from "firebase/auth";
 import { auth, db } from "./firebase";
+import { uploadToCloudinary } from "./utils/cloudinaryUpload";
 import "./Adminpanel.css";
 
 const AdminPanel = () => {
@@ -267,30 +268,17 @@ const AdminPanel = () => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("image", selectedImage);
-
     try {
-      const res = await fetch("http://localhost:5000/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
+      alert("Uploading image...");
+      const imageUrl = await uploadToCloudinary(selectedImage);
       
-      // Check if there's an error in the response
-      if (data.error) {
-        alert(`Upload failed: ${data.error}`);
-        return;
-      }
-
-      setUploadedImageUrl(data.imageUrl);
+      setUploadedImageUrl(imageUrl);
       // Automatically update the imageUrl field in editData
-      setEditData({ ...editData, imageUrl: data.imageUrl });
+      setEditData({ ...editData, imageUrl });
       alert("Image uploaded successfully!");
     } catch (error) {
       console.error("Upload failed:", error);
-      alert("Something went wrong!");
+      alert("Upload failed! Please check your Cloudinary settings.");
     }
   };
   if (!user) {
