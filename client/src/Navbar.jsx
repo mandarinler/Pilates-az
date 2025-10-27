@@ -8,7 +8,6 @@ const sections = [
   { id: "packages", label: "Paketlər" },
   { id: "trainers", label: "Məşqçilər" },
   { id: "blogs", label: "Bloqlar" },
-  { id: "certificates", label: "Sertifikatlar" },
   { id: "contact", label: "Əlaqə" },
 ];
 

@@ -260,6 +260,13 @@ const AdminPanel = () => {
       return;
     }
 
+    // Check file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (selectedImage.size > maxSize) {
+      alert("File size too large. Maximum size is 10MB. Please choose a smaller image.");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("image", selectedImage);
 
@@ -270,6 +277,13 @@ const AdminPanel = () => {
       });
 
       const data = await res.json();
+      
+      // Check if there's an error in the response
+      if (data.error) {
+        alert(`Upload failed: ${data.error}`);
+        return;
+      }
+
       setUploadedImageUrl(data.imageUrl);
       // Automatically update the imageUrl field in editData
       setEditData({ ...editData, imageUrl: data.imageUrl });

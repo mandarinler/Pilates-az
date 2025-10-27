@@ -11,6 +11,11 @@ const BlogPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
+
   useEffect(() => {
     const fetchBlog = async () => {
       try {
@@ -51,7 +56,7 @@ const BlogPage = () => {
           <h2>Oops!</h2>
           <p>{error || "Blog post not found"}</p>
           <button onClick={() => navigate("/")} className="back-btn">
-            ← Back to Home
+            ← Ana Səhfəyə Qayıt
           </button>
         </div>
       </div>
@@ -62,7 +67,7 @@ const BlogPage = () => {
     <div className="blog-page">
       <div className="blog-container">
         <button onClick={() => navigate("/")} className="back-btn">
-          ← Back to Home
+        ← Ana Səhfəyə Qayıt
         </button>
         
         <article className="blog-article">

@@ -16,29 +16,7 @@ const sections = [
   { id: "why", title: "Niyə Biz" },
   { id: "packages", title: "Paketlər" },
   { id: "trainers", title: "Məşqçilər" },
-  { id: "certificates", title: "Sertifikatlar" },
   { id: "contact", title: "Əlaqə" },
-];
-
-const certificates = [
-  {
-    id: 1,
-    img: "https://www.st-pilates.az/uploads/FatimaCert.jpg",
-    date: "12.05.2017",
-    desc: "Peşəkar Fitnes Mərkəzində tam zamanlı kurs",
-  },
-  {
-    id: 2,
-    img: "https://www.st-pilates.az/uploads/372500GE1112841-ingilizce.jpg",
-    date: "11.05.2024",
-    desc: "Global Enstitü Pilates təlimi sertifikatı",
-  },
-  {
-    id: 3,
-    img: "https://www.st-pilates.az/uploads/Converted%20File.jpg",
-    date: "12.01.2024",
-    desc: "Duruşun analizi və korrektiv məşq proqramı",
-  },
 ];
 
 export default function Body() {
@@ -306,37 +284,6 @@ export default function Body() {
         </div>
       </section>
 
-      {/* Certificates Section */}
-      <section id="certificates" className="certificates">
-        <h2 className="certificates-title">Sertifikatlar</h2>
-        <Swiper
-          modules={[Navigation, Pagination]}
-          slidesPerView={1}
-          spaceBetween={20}
-          loop={true}
-          pagination={{ clickable: true }}
-          navigation
-          breakpoints={{
-            768: { slidesPerView: 2 },
-            1024: { slidesPerView: 3 },
-          }}
-        >
-          {certificates.map((cert) => (
-            <SwiperSlide key={cert.id}>
-              <div className="certificate-card">
-                <div className="certificate-img">
-                  <img src={cert.img} alt="Certificate" />
-                </div>
-                <div className="certificate-info">
-                  <p className="date">{cert.date}</p>
-                  <p className="title">Sertifikat</p>
-                  <p className="desc">{cert.desc}</p>
-                </div>
-              </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </section>
       {/* Contact Section */}
       <section id="contact" className="contact-section">
         <h2 className="contact-title">Əlaqə Saxla</h2>

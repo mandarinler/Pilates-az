@@ -1,30 +1,40 @@
 /* Blog Page Styles */
 .blog-page {
   min-height: 100vh;
-  background: #f8f9fa;
-  padding-top: 80px;
+  background: #2a2a2a;
 }
 
 .blog-container {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 40px 20px;
 }
 
 .back-btn {
-  background: #007bff;
+  background: #111;
   color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
+  border: 2px solid red;
+  padding: 12px 24px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 1rem;
   margin-bottom: 30px;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
 }
 
 .back-btn:hover {
-  background: #0056b3;
+  background: red;
+  transform: translateX(-5px);
+  box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3);
+  border: 2px solid black;
+}
+
+.back-btn:active {
+  transform: translateX(-2px);
 }
 
 .blog-loading,
@@ -35,13 +45,14 @@
   justify-content: center;
   min-height: 50vh;
   text-align: center;
+  color: white;
 }
 
 .spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #007bff;
+  width: 50px;
+  height: 50px;
+  border: 4px solid #111;
+  border-top: 4px solid red;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 20px;
@@ -53,38 +64,44 @@
 }
 
 .blog-error h2 {
-  color: #dc3545;
+  color: red;
   margin-bottom: 10px;
+  font-size: 2rem;
 }
 
 .blog-error p {
-  color: #666;
+  color: #ccc;
   margin-bottom: 20px;
+  font-size: 1.1rem;
 }
 
 .blog-article {
-  background: white;
+  background: #111;
   border-radius: 15px;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid #333;
 }
 
 .blog-header {
-  padding: 40px 40px 20px;
+  padding: 50px 40px 30px;
   text-align: center;
+  background: linear-gradient(135deg, #111 0%, #2a2a2a 100%);
+  border-bottom: 2px solid #333;
 }
 
-.blog-title {
-  font-size: 2.5rem;
+.blog-article .blog-title {
+  font-size: 2.8rem;
   font-weight: 700;
-  color: #333;
-  margin-bottom: 15px;
+  color: red;
+  margin-bottom: 20px;
   line-height: 1.2;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .blog-meta {
-  color: #666;
-  font-size: 1rem;
+  color: #ccc;
+  font-size: 1.1rem;
 }
 
 .blog-featured-image {
@@ -100,17 +117,18 @@
 }
 
 .blog-content {
-  padding: 40px;
+  padding: 50px;
+  background: #1a1a1a;
 }
 
 .blog-text {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   line-height: 1.8;
-  color: #333;
+  color: #e0e0e0;
 }
 
 .blog-text p {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
 .blog-text p:last-child {
@@ -118,45 +136,55 @@
 }
 
 .blog-footer {
-  padding: 20px 40px 40px;
-  border-top: 1px solid #eee;
+  padding: 30px 50px;
+  border-top: 2px solid #333;
+  background: #111;
 }
 
 .blog-tags {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
 .tag {
-  background: #e9ecef;
-  color: #495057;
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 0.9rem;
+  background: #333;
+  color: red;
+  padding: 8px 16px;
+  border-radius: 25px;
+  font-size: 0.95rem;
   font-weight: 500;
+  border: 1px solid #444;
+  transition: all 0.3s ease;
+}
+
+.tag:hover {
+  background: red;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 0, 0, 0.3);
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
   .blog-container {
-    padding: 15px;
+    padding: 20px 15px;
   }
   
   .blog-header {
-    padding: 30px 20px 15px;
+    padding: 40px 25px 25px;
   }
   
-  .blog-title {
-    font-size: 2rem;
+  .blog-article .blog-title {
+    font-size: 2.2rem;
   }
   
   .blog-featured-image {
-    height: 250px;
+    height: 300px;
   }
   
   .blog-content {
-    padding: 30px 20px;
+    padding: 35px 25px;
   }
   
   .blog-text {
@@ -164,7 +192,7 @@
   }
   
   .blog-footer {
-    padding: 15px 20px 30px;
+    padding: 25px;
   }
 }
 
@@ -173,15 +201,24 @@
     padding-top: 70px;
   }
   
-  .blog-title {
+  .back-btn {
+    font-size: 0.9rem;
+    padding: 10px 20px;
+  }
+  
+  .blog-article .blog-title {
     font-size: 1.8rem;
   }
   
   .blog-featured-image {
-    height: 200px;
+    height: 250px;
   }
   
   .blog-content {
-    padding: 20px 15px;
+    padding: 25px 20px;
+  }
+  
+  .blog-header {
+    padding: 35px 20px 20px;
   }
 }
