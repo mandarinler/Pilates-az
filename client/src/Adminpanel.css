@@ -207,6 +207,19 @@
     color: #f0f0f0; /* input text color */
     transition: border 0.2s;
   }
+
+.data-item textarea {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  border: 1px solid #666;
+  outline: none;
+  font-size: 0.95rem;
+  background-color: #2e2e42;
+  color: #f0f0f0;
+  transition: border 0.2s;
+}
   
   .data-item input:focus {
     border-color: #4a90e2;

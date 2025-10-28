@@ -25,7 +25,9 @@ export default function Body() {
   const [packages, setPackages] = useState([]);
   const [trainers, setTrainers] = useState([]);
   const [blogs, setBlogs] = useState([]);
+  const [whys, setWhys] = useState([]);
   const [about, setAbout] = useState(null);
+  const [contact, setContact] = useState(null);
   // Trainers
   useEffect(() => {
     const fetchTrainers = async () => {
@@ -73,6 +75,21 @@ export default function Body() {
     fetchBlogs();
   }, []);
 
+  // Why (list)
+  useEffect(() => {
+    const fetchWhy = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "why"));
+        const data = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        data.sort((a, b) => (a.order || 0) - (b.order || 0));
+        setWhys(data);
+      } catch (error) {
+        console.error("Error fetching why items:", error);
+      }
+    };
+    fetchWhy();
+  }, []);
+
   // About (single doc)
   useEffect(() => {
     const fetchAbout = async () => {
@@ -87,6 +104,22 @@ export default function Body() {
       }
     };
     fetchAbout();
+  }, []);
+
+  // Contact (single doc)
+  useEffect(() => {
+    const fetchContact = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "contact"));
+        const doc = querySnapshot.docs[0]
+          ? { id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() }
+          : null;
+        setContact(doc);
+      } catch (error) {
+        console.error("Error fetching contact:", error);
+      }
+    };
+    fetchContact();
   }, []);
 
   return (
@@ -121,62 +154,23 @@ export default function Body() {
           </div>
         </div>
       </section>
-      {/* Why Pilates Section */}
+      {/* Why Pilates Section (dynamic) */}
       <section id="why" className="why-section">
         <h2 className="why-title">Üstünlüklərimiz</h2>
-
-        <div className="why-container">
-          {/* Body Building */}
-          <div className="why-item">
-            <div className="why-image">
-              <img
-                src="https://i.hizliresim.com/cizc78c.jpg"
-                alt="Body Building"
-              />
+        <div className={`why-container two-col ${whys.length === 1 ? "single" : ""}`}>
+          {whys.map((item) => (
+            <div key={item.id} className="why-item">
+              <div className="why-image">
+                {item.imageUrl ? (
+                  <img src={item.imageUrl} alt={item.title} />
+                ) : null}
+              </div>
+              <div className="why-text">
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+              </div>
             </div>
-            <div className="why-text">
-              <h3>Body Building</h3>
-              <p>
-                Pilates məşqləri bədəninizin əzələ tonusunu artırır, gücü və
-                çevikliyi inkişaf etdirir. Hər yaş üçün uyğun və təhlükəsizdir.
-              </p>
-            </div>
-          </div>
-
-          {/* Gym for Men */}
-          <div className="why-item">
-            <div className="why-image">
-              <img
-                src="https://i.hizliresim.com/6oymv7n.jpg"
-                alt="Gym for Men"
-              />
-            </div>
-            <div className="why-text">
-              <h3>Kişilər üçün GYM</h3>
-              <p>
-                Kişilər üçün xüsusi proqramlar güc və dözümlülüyü artırmaq
-                məqsədilə hazırlanmışdır. Sağlam bədən quruluşunu dəstəkləyir.
-              </p>
-            </div>
-          </div>
-
-          {/* Gym for Women */}
-          <div className="why-item">
-            <div className="why-image">
-              <img
-                src="https://i.hizliresim.com/5e1kx00.jpg"
-                alt="Gym for Women"
-              />
-            </div>
-            <div className="why-text">
-              <h3>Qadınlar üçün GYM</h3>
-              <p>
-                Qadınlar üçün nəzərdə tutulmuş Pilates proqramları bədənin
-                elastikliyini və forma almasını təmin edir, həmçinin stressi
-                azaldır.
-              </p>
-            </div>
-          </div>
+          ))}
         </div>
       </section>
 
@@ -205,32 +199,32 @@ export default function Body() {
       {/* Trainers section */}
       <section id="trainers" className="site-section trainers-section">
         <h2 className="trainers-title">Məşqçilərimiz</h2>
-        <div className="trainers-container">
-        {trainers.map((trainer) => (
-          <div
-            key={trainer.id}
-            className="trainer-card"
-            style={{ backgroundImage: `url(https://i.hizliresim.com/h1lifh4.jpg)` }}
-          >
-            <div className="trainer-overlay">
-              <p>Professional Məşqçi</p>
-              <h3>{trainer.name}</h3>
-              <div className="trainer-socials">
-                {Object.entries(trainer.socials).map(([platform, url]) => (
-                  <a
-                    key={platform}
-                    href={url}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <i className={`fab fa-${platform}`}></i>
-                  </a>
-                ))}
+        <div className="trainers-grid">
+          {trainers.map((trainer) => (
+            <div key={trainer.id} className="trainer-card">
+              <div className="trainer-image">
+                <img
+                  src={trainer.imageUrl || "https://i.hizliresim.com/h1lifh4.jpg"}
+                  alt={trainer.name}
+                  onError={(e) => {
+                    e.currentTarget.src = "https://i.hizliresim.com/h1lifh4.jpg";
+                  }}
+                />
+              </div>
+              <div className="trainer-overlay">
+                <p>Professional Məşqçi</p>
+                <h3>{trainer.name}</h3>
+                <div className="trainer-socials">
+                  {Object.entries(trainer.socials).map(([platform, url]) => (
+                    <a key={platform} href={url} target="_blank" rel="noreferrer">
+                      <i className={`fab fa-${platform}`}></i>
+                    </a>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
       </section>
 
       {/* Blogs Section */}
@@ -296,34 +290,35 @@ export default function Body() {
         </div>
       </section>
 
-      {/* Contact Section */}
+      {/* Contact Section (dynamic) */}
       <section id="contact" className="contact-section">
         <h2 className="contact-title">Əlaqə Saxla</h2>
         <div className="contact-grid">
           {/* Left Side */}
           <div className="contact-left">
             <img
-              src="https://i.hizliresim.com/91xwdfz.png"
+              src={contact?.logoUrl || "https://i.hizliresim.com/91xwdfz.png"}
               alt="ST Pilates Logo"
               className="contact-logo"
             />
             <div className="contact-socials">
-              <a href="https://instagram.com" target="_blank" rel="noreferrer">
-                <i className="fab fa-instagram"></i>
-              </a>
-              <a href="https://facebook.com" target="_blank" rel="noreferrer">
-                <i className="fab fa-facebook"></i>
-              </a>
-              <a href="https://tiktok.com" target="_blank" rel="noreferrer">
-                <i className="fab fa-tiktok"></i>
-              </a>
-              <a
-                href="https://wa.me/994997332626"
-                target="_blank"
-                rel="noreferrer"
-              >
-                <i className="fab fa-whatsapp"></i>
-              </a>
+              {Array.isArray(contact?.socials)
+                ? contact.socials
+                    .filter((s) => s && s.platform && s.url)
+                    .map((s) => (
+                      <a key={s.id} href={s.url} target="_blank" rel="noreferrer">
+                        <i className={`fab fa-${s.platform}`}></i>
+                      </a>
+                    ))
+                : contact?.socials && typeof contact.socials === "object"
+                ? Object.entries(contact.socials)
+                    .filter(([_, url]) => typeof url === "string" && url)
+                    .map(([platform, url]) => (
+                      <a key={platform} href={url} target="_blank" rel="noreferrer">
+                        <i className={`fab fa-${platform}`}></i>
+                      </a>
+                    ))
+                : null}
             </div>
           </div>
 
@@ -331,19 +326,23 @@ export default function Body() {
           <div className="contact-right">
             <div className="contact-hours">
               <h3>İş saatları</h3>
-              <p>Həftə içi : 09:00 - 20:00</p>
-              <p>Şənbə : 09:00 - 20:00</p>
-              <p>Bazar : Fərdi dərslər</p>
+              {(contact?.hours || [
+                "Həftə içi : 09:00 - 20:00",
+                "Şənbə : 09:00 - 20:00",
+                "Bazar : Fərdi dərslər",
+              ]).map((h, i) => (
+                <p key={i}>{h}</p>
+              ))}
             </div>
 
             <div className="contact-info">
               <h3>Əlaqə</h3>
-              <p>+994 99 733 26 26</p>
-              <p>+994 99 733 26 26</p>
-              <p>office@st-pilates.az</p>
+              {(contact?.phones || ["+994 99 733 26 26", "+994 99 733 26 26"]).map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
+              <p>{contact?.email || "office@st-pilates.az"}</p>
               <p>
-                8 Noyabr prospekti , Nargilə dairəsi, Blue Office C blok 18ci
-                mərtəbə
+                {contact?.address || "8 Noyabr prospekti , Nargilə dairəsi, Blue Office C blok 18ci mərtəbə"}
               </p>
             </div>
           </div>
