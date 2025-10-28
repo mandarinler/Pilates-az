@@ -25,6 +25,7 @@ export default function Body() {
   const [packages, setPackages] = useState([]);
   const [trainers, setTrainers] = useState([]);
   const [blogs, setBlogs] = useState([]);
+  const [about, setAbout] = useState(null);
   // Trainers
   useEffect(() => {
     const fetchTrainers = async () => {
@@ -72,6 +73,22 @@ export default function Body() {
     fetchBlogs();
   }, []);
 
+  // About (single doc)
+  useEffect(() => {
+    const fetchAbout = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "about"));
+        const doc = querySnapshot.docs[0]
+          ? { id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() }
+          : null;
+        setAbout(doc);
+      } catch (error) {
+        console.error("Error fetching about:", error);
+      }
+    };
+    fetchAbout();
+  }, []);
+
   return (
     <main>
       {/* Hero Section */}
@@ -92,20 +109,15 @@ export default function Body() {
         </div>
       </section>
 
-      {/* About Us Section */}
+      {/* About Us Section (dynamic) */}
       <section id="about" className="about-section">
         <div className="about-container">
           <div className="about-image">
-            <img src="https://i.hizliresim.com/r47r9w0.jpg" alt="Pilates" />
+            <img src={about?.imageUrl || "https://i.hizliresim.com/r47r9w0.jpg"} alt="About" />
           </div>
           <div className="about-content">
-            <h2>Pilatesin məqsəd və faydaları</h2>
-            <ul className="about-list">
-              <li>Düzgün nəfəs almağı öyrədir</li>
-              <li>Gündəlik aktivliyi artırır</li>
-              <li>Bədən duruşunu düzəldir</li>
-              <li>Skolyoz problemi həll edir</li>
-            </ul>
+            <h2>{about?.title || "Haqqımızda"}</h2>
+            <p>{about?.text || "Məlumat tezliklə əlavə ediləcək."}</p>
           </div>
         </div>
       </section>

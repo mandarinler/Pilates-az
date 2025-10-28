@@ -24,12 +24,15 @@ const AdminPanel = () => {
   const [trainers, setTrainers] = useState([]);
   const [packages, setPackages] = useState([]);
   const [blogs, setBlogs] = useState([]);
+  const [about, setAbout] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editId, setEditId] = useState(null);
   const [editData, setEditData] = useState({});
   const [selectedImage, setSelectedImage] = useState(null);
   const [preview, setPreview] = useState("");
   const [uploadedImageUrl, setUploadedImageUrl] = useState("");
+  const [selectedSection, setSelectedSection] = useState("packages");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, setUser);
@@ -42,9 +45,14 @@ const AdminPanel = () => {
         const trainerSnap = await getDocs(collection(db, "trainers"));
         const packageSnap = await getDocs(collection(db, "packages"));
         const blogSnap = await getDocs(collection(db, "blogs"));
+        const aboutSnap = await getDocs(collection(db, "about"));
         setTrainers(trainerSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
         setPackages(packageSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
         setBlogs(blogSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
+        const aboutDoc = aboutSnap.docs[0]
+          ? { id: aboutSnap.docs[0].id, ...aboutSnap.docs[0].data() }
+          : null;
+        setAbout(aboutDoc);
         setLoading(false);
       } catch (err) {
         console.error("Error fetching data:", err);
@@ -232,6 +240,12 @@ const AdminPanel = () => {
           createdAt: new Date().toISOString(),
           order: blogs.length + 1,
         };
+      } else if (type === "about") {
+        newItem = {
+          title: "About Our Company",
+          text: "Write about the company's history and mission here...",
+          imageUrl: "",
+        };
       }
 
       const docRef = await addDoc(collection(db, type), newItem);
@@ -242,6 +256,9 @@ const AdminPanel = () => {
         setPackages([...packages, { id: docRef.id, ...newItem }]);
       } else if (type === "blogs") {
         setBlogs([...blogs, { id: docRef.id, ...newItem }]);
+      } else if (type === "about") {
+        const created = { id: docRef.id, ...newItem };
+        setAbout(created);
       }
       setEditId(docRef.id);
       setEditData({ id: docRef.id, ...newItem });
@@ -281,6 +298,12 @@ const AdminPanel = () => {
       alert("Upload failed! Please check your Cloudinary settings.");
     }
   };
+  
+  const resetImageStates = () => {
+    setSelectedImage(null);
+    setPreview("");
+    setUploadedImageUrl("");
+  };
   if (!user) {
     return (
       <div className="login-container">
@@ -309,397 +332,439 @@ const AdminPanel = () => {
     <div className="admin-panel">
       <div className="admin-header">
         <h1>Admin Panel</h1>
-        <button onClick={handleLogout} className="logout-btn">
-          Logout
-        </button>
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <button onClick={handleLogout} className="logout-btn">
+            Logout
+          </button>
+        </div>
       </div>
 
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <div className="admin-grid">
-          {/* Packages */}
-          <div className="admin-card">
-            <div className="card-header">
-              <h2>Packages</h2>
-              <button
-                onClick={() => handleCreate("packages")}
-                className="create-btn"
-              >
-                Add New Package
-              </button>
-            </div>
-            {packages.map((pkg) => (
-              <div key={pkg.id} className="data-item">
-                {editId === pkg.id ? (
-                  <>
-                    <label>Name</label>
-                    <input
-                      value={editData.name}
-                      onChange={(e) => handleChange("name", e.target.value)}
-                    />
-
-                    <label>Price</label>
-                    <input
-                      value={editData.price}
-                      onChange={(e) => handleChange("price", e.target.value)}
-                    />
-
-                    <label>Time</label>
-                    <input
-                      value={editData.time}
-                      onChange={(e) => handleChange("time", e.target.value)}
-                    />
-
-                    <label>Order</label>
-                    <input
-                      value={editData.order}
-                      onChange={(e) => handleChange("order", e.target.value)}
-                    />
-
-                    <div className="features-container">
-                      <label>Features</label>
-                      {(Array.isArray(editData.features)
-                        ? editData.features
-                        : []
-                      ).map((f, idx) => (
-                        <div key={idx} className="feature-item">
-                          <input
-                            value={f || ""}
-                            onChange={(e) =>
-                              handleChange(
-                                "features",
-                                e.target.value,
-                                null,
-                                idx
-                              )
-                            }
-                            placeholder={`Feature ${idx + 1}`}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeFeature(idx)}
-                            className="remove-btn"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      ))}
-                      <button
-                        type="button"
-                        onClick={addFeature}
-                        className="add-btn"
-                      >
-                        Add Feature
-                      </button>
-                    </div>
-
-                    <div className="action-buttons">
-                      <button onClick={() => handleSave("packages", pkg.id)}>
-                        Save
-                      </button>
-                      <button
-                        onClick={() => handleDelete("packages", pkg.id)}
-                        className="delete-btn"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <p>
-                      {pkg.name} - {pkg.price} {pkg.time}
-                    </p>
-                    <div className="action-buttons">
-                      <button
-                        onClick={() => {
-                          setEditId(pkg.id);
-                          setEditData(pkg);
-                        }}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete("packages", pkg.id)}
-                        className="delete-btn"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Trainers */}
-          <div className="admin-card">
-            <div className="card-header">
-              <h2>Trainers</h2>
-              <button
-                onClick={() => handleCreate("trainers")}
-                className="create-btn"
-              >
-                Add New Trainer
-              </button>
-            </div>
-            {trainers.map((tr) => (
-              <div key={tr.id} className="data-item">
-                {editId === tr.id ? (
-                  <>
-                    <label>Name</label>
-                    <input
-                      value={editData.name}
-                      onChange={(e) => handleChange("name", e.target.value)}
-                    />
-
-                    <label>Order</label>
-                    <input
-                      value={editData.order}
-                      onChange={(e) => handleChange("order", e.target.value)}
-                    />
-
-                    <div className="socials-container">
-                      <label>Social Links</label>
-                      {editData.socials &&
-                        Object.keys(editData.socials).map((socialId) => {
-                          const social = editData.socials[socialId];
-                          return (
-                            <div key={socialId} className="social-item">
+        <div className="admin-layout">
+          <aside className={`sidebar ${isSidebarOpen ? "" : "collapsed"}`}>
+            <button
+              className={`nav-item ${selectedSection === "packages" ? "active" : ""}`}
+              onClick={() => setSelectedSection("packages")}
+            >
+              Packages
+            </button>
+            <button
+              className={`nav-item ${selectedSection === "trainers" ? "active" : ""}`}
+              onClick={() => setSelectedSection("trainers")}
+            >
+              Trainers
+            </button>
+            <button
+              className={`nav-item ${selectedSection === "blogs" ? "active" : ""}`}
+              onClick={() => setSelectedSection("blogs")}
+            >
+              Blog
+            </button>
+            <button
+              className={`nav-item ${selectedSection === "about" ? "active" : ""}`}
+              onClick={() => {
+                setSelectedSection("about");
+                resetImageStates();
+                if (about) {
+                  setEditId(about.id);
+                  setEditData(about);
+                } else {
+                  setEditId(null);
+                  setEditData({});
+                }
+              }}
+            >
+              About
+            </button>
+          </aside>
+          <main className="content">
+            {selectedSection === "packages" && (
+              <div className="admin-card">
+                <div className="card-header">
+                  <h2>Packages</h2>
+                  <button
+                    onClick={() => handleCreate("packages")}
+                    className="create-btn"
+                  >
+                    Add New Package
+                  </button>
+                </div>
+                {packages.map((pkg) => (
+                  <div key={pkg.id} className="data-item">
+                    {editId === pkg.id ? (
+                      <>
+                        <label>Name</label>
+                        <input
+                          value={editData.name}
+                          onChange={(e) => handleChange("name", e.target.value)}
+                        />
+                        <label>Price</label>
+                        <input
+                          value={editData.price}
+                          onChange={(e) => handleChange("price", e.target.value)}
+                        />
+                        <label>Time</label>
+                        <input
+                          value={editData.time}
+                          onChange={(e) => handleChange("time", e.target.value)}
+                        />
+                        <label>Order</label>
+                        <input
+                          value={editData.order}
+                          onChange={(e) => handleChange("order", e.target.value)}
+                        />
+                        <div className="features-container">
+                          <label>Features</label>
+                          {(Array.isArray(editData.features) ? editData.features : []).map((f, idx) => (
+                            <div key={idx} className="feature-item">
                               <input
-                                value={social?.platform || ""}
+                                value={f || ""}
                                 onChange={(e) =>
-                                  updateSocialPlatform(socialId, e.target.value)
+                                  handleChange("features", e.target.value, null, idx)
                                 }
-                                placeholder="Platform name (e.g., instagram, twitter)"
-                              />
-                              <input
-                                value={social?.url || ""}
-                                onChange={(e) =>
-                                  updateSocialUrl(socialId, e.target.value)
-                                }
-                                placeholder="Social link URL"
+                                placeholder={`Feature ${idx + 1}`}
                               />
                               <button
                                 type="button"
-                                onClick={() => removeSocial(socialId)}
+                                onClick={() => removeFeature(idx)}
                                 className="remove-btn"
                               >
                                 Remove
                               </button>
                             </div>
-                          );
-                        })}
-                      <button
-                        type="button"
-                        onClick={addSocial}
-                        className="add-btn"
-                      >
-                        Add Social Link
-                      </button>
-                    </div>
-
-                    <div className="action-buttons">
-                      <button onClick={() => handleSave("trainers", tr.id)}>
-                        Save
-                      </button>
-                      <button
-                        onClick={() => handleDelete("trainers", tr.id)}
-                        className="delete-btn"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <p>{tr.name}</p>
-                    <div className="action-buttons">
-                      <button
-                        onClick={() => {
-                          setEditId(tr.id);
-                          setEditData({
-                            ...tr,
-                            socials: migrateSocials(tr.socials),
-                          });
-                        }}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete("trainers", tr.id)}
-                        className="delete-btn"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </>
-                )}
+                          ))}
+                          <button type="button" onClick={addFeature} className="add-btn">
+                            Add Feature
+                          </button>
+                        </div>
+                        <div className="action-buttons">
+                          <button onClick={() => handleSave("packages", pkg.id)}>Save</button>
+                          <button onClick={() => handleDelete("packages", pkg.id)} className="delete-btn">
+                            Delete
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p>
+                          {pkg.name} - {pkg.price} {pkg.time}
+                        </p>
+                        <div className="action-buttons">
+                          <button
+                            onClick={() => {
+                              setEditId(pkg.id);
+                              setEditData(pkg);
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button onClick={() => handleDelete("packages", pkg.id)} className="delete-btn">
+                            Delete
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )}
 
-          {/* Blogs */}
-          <div className="admin-card">
-            <div className="card-header">
-              <h2>Blog Posts</h2>
-              <button
-                onClick={() => handleCreate("blogs")}
-                className="create-btn"
-              >
-                Add New Blog Post
-              </button>
-            </div>
-            {blogs.map((blog) => (
-              <div key={blog.id} className="data-item">
-                {editId === blog.id ? (
-                  <>
-                    <label>Title</label>
+            {selectedSection === "trainers" && (
+              <div className="admin-card">
+                <div className="card-header">
+                  <h2>Trainers</h2>
+                  <button onClick={() => handleCreate("trainers")} className="create-btn">
+                    Add New Trainer
+                  </button>
+                </div>
+                {trainers.map((tr) => (
+                  <div key={tr.id} className="data-item">
+                    {editId === tr.id ? (
+                      <>
+                        <label>Name</label>
+                        <input
+                          value={editData.name}
+                          onChange={(e) => handleChange("name", e.target.value)}
+                        />
+                        <label>Order</label>
+                        <input
+                          value={editData.order}
+                          onChange={(e) => handleChange("order", e.target.value)}
+                        />
+                        <div className="socials-container">
+                          <label>Social Links</label>
+                          {editData.socials &&
+                            Object.keys(editData.socials).map((socialId) => {
+                              const social = editData.socials[socialId];
+                              return (
+                                <div key={socialId} className="social-item">
+                                  <input
+                                    value={social?.platform || ""}
+                                    onChange={(e) => updateSocialPlatform(socialId, e.target.value)}
+                                    placeholder="Platform name (e.g., instagram, twitter)"
+                                  />
+                                  <input
+                                    value={social?.url || ""}
+                                    onChange={(e) => updateSocialUrl(socialId, e.target.value)}
+                                    placeholder="Social link URL"
+                                  />
+                                  <button type="button" onClick={() => removeSocial(socialId)} className="remove-btn">
+                                    Remove
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          <button type="button" onClick={addSocial} className="add-btn">
+                            Add Social Link
+                          </button>
+                        </div>
+                        <div className="action-buttons">
+                          <button onClick={() => handleSave("trainers", tr.id)}>Save</button>
+                          <button onClick={() => handleDelete("trainers", tr.id)} className="delete-btn">
+                            Delete
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p>{tr.name}</p>
+                        <div className="action-buttons">
+                          <button
+                            onClick={() => {
+                              setEditId(tr.id);
+                              setEditData({
+                                ...tr,
+                                socials: migrateSocials(tr.socials),
+                              });
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button onClick={() => handleDelete("trainers", tr.id)} className="delete-btn">
+                            Delete
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {selectedSection === "blogs" && (
+              <div className="admin-card">
+                <div className="card-header">
+                  <h2>Blog Posts</h2>
+                  <button onClick={() => handleCreate("blogs")} className="create-btn">
+                    Add New Blog Post
+                  </button>
+                </div>
+                {blogs.map((blog) => (
+                  <div key={blog.id} className="data-item">
+                    {editId === blog.id ? (
+                      <>
+                        <label>Title</label>
+                        <input
+                          value={editData.title || ""}
+                          onChange={(e) => handleChange("title", e.target.value)}
+                          placeholder="Blog post title"
+                        />
+                        <label>Content</label>
+                        <textarea
+                          value={editData.content || ""}
+                          onChange={(e) => handleChange("content", e.target.value)}
+                          placeholder="Write your blog content here..."
+                          rows="6"
+                          style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
+                        />
+                        <label>Order</label>
+                        <input
+                          type="number"
+                          value={editData.order || ""}
+                          onChange={(e) => handleChange("order", parseInt(e.target.value))}
+                          placeholder="Display order"
+                        />
+                        <div className="image-upload-section">
+                          <label>Blog Image</label>
+                          <input type="file" accept="image/*" onChange={handleFileChange} style={{ marginBottom: "10px" }} />
+                          {preview && (
+                            <img
+                              src={preview}
+                              alt="Preview"
+                              width="200"
+                              style={{ borderRadius: "10px", marginBottom: "10px", display: "block" }}
+                            />
+                          )}
+                          <button type="button" onClick={handleUpload} style={{ marginBottom: "10px" }}>
+                            Upload Image
+                          </button>
+                          {uploadedImageUrl && (
+                            <div style={{ marginBottom: "10px" }}>
+                              <p style={{ color: "green", fontWeight: "bold" }}>✅ Image uploaded successfully!</p>
+                              <p>Image URL (automatically set):</p>
+                              <input
+                                value={uploadedImageUrl}
+                                onChange={(e) => handleChange("imageUrl", e.target.value)}
+                                placeholder="Image URL"
+                                style={{ width: "100%", padding: "5px", backgroundColor: "#f0f8ff" }}
+                                readOnly
+                              />
+                              <img src={uploadedImageUrl} alt="Uploaded" width="200" style={{ borderRadius: "10px", marginTop: "10px", border: "2px solid green" }} />
+                            </div>
+                          )}
+                          {editData.imageUrl && !uploadedImageUrl && (
+                            <div style={{ marginBottom: "10px" }}>
+                              <label>Current Image URL:</label>
+                              <input
+                                value={editData.imageUrl || ""}
+                                onChange={(e) => handleChange("imageUrl", e.target.value)}
+                                placeholder="Image URL"
+                                style={{ width: "100%", padding: "5px" }}
+                              />
+                              {editData.imageUrl && (
+                                <img src={editData.imageUrl} alt="Current" width="200" style={{ borderRadius: "10px", marginTop: "10px" }} />
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <div className="action-buttons">
+                          <button onClick={() => handleSave("blogs", blog.id)}>Save</button>
+                          <button onClick={() => handleDelete("blogs", blog.id)} className="delete-btn">
+                            Delete
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ marginBottom: "10px" }}>
+                          <h4>{blog.title}</h4>
+                          <p style={{ fontSize: "14px", color: "#666" }}>{blog.content?.substring(0, 100)}...</p>
+                          {blog.imageUrl && (
+                            <img src={blog.imageUrl} alt="Blog" width="150" style={{ borderRadius: "5px", marginTop: "10px" }} />
+                          )}
+                          <p style={{ fontSize: "12px", color: "#999", marginTop: "5px" }}>
+                            Order: {blog.order} | Created: {new Date(blog.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="action-buttons">
+                          <button
+                            onClick={() => {
+                              setEditId(blog.id);
+                              setEditData(blog);
+                              setUploadedImageUrl("");
+                              setPreview("");
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button onClick={() => handleDelete("blogs", blog.id)} className="delete-btn">
+                            Delete
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {selectedSection === "about" && (
+              <div className="admin-card">
+                <div className="card-header">
+                  <h2>About Section</h2>
+                  <button
+                    onClick={async () => {
+                      if (about) return;
+                      await handleCreate("about");
+                    }}
+                    className="create-btn"
+                  >
+                    {about ? "" : "Create About"}
+                  </button>
+                </div>
+                {about ? (
+                  <div className="data-item">
+                    <label>Header</label>
                     <input
-                      value={editData.title || ""}
-                      onChange={(e) => handleChange("title", e.target.value)}
-                      placeholder="Blog post title"
+                      value={editId === about.id ? (editData.title || "") : (about.title || "")}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (editId !== about.id) {
+                          setEditId(about.id);
+                          setEditData({ ...about, title: value });
+                        } else {
+                          handleChange("title", value);
+                        }
+                      }}
+                      placeholder="About section header"
                     />
-
-                    <label>Content</label>
+                    <label>Paragraph</label>
                     <textarea
-                      value={editData.content || ""}
-                      onChange={(e) => handleChange("content", e.target.value)}
-                      placeholder="Write your blog content here..."
+                      value={editId === about.id ? (editData.text || "") : (about.text || "")}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (editId !== about.id) {
+                          setEditId(about.id);
+                          setEditData({ ...about, text: value });
+                        } else {
+                          handleChange("text", value);
+                        }
+                      }}
+                      placeholder="Write about the company's history..."
                       rows="6"
                       style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
                     />
-
-                    <label>Order</label>
-                    <input
-                      type="number"
-                      value={editData.order || ""}
-                      onChange={(e) => handleChange("order", parseInt(e.target.value))}
-                      placeholder="Display order"
-                    />
-
                     <div className="image-upload-section">
-                      <label>Blog Image</label>
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        onChange={handleFileChange}
-                        style={{ marginBottom: "10px" }}
-                      />
-                      
+                      <label>About Image</label>
+                      <input type="file" accept="image/*" onChange={handleFileChange} style={{ marginBottom: "10px" }} />
                       {preview && (
-                        <img
-                          src={preview}
-                          alt="Preview"
-                          width="200"
-                          style={{ borderRadius: "10px", marginBottom: "10px", display: "block" }}
-                        />
+                        <img src={preview} alt="Preview" width="200" style={{ borderRadius: "10px", marginBottom: "10px", display: "block" }} />
                       )}
-                      
-                      <button 
-                        type="button"
-                        onClick={handleUpload}
-                        style={{ marginBottom: "10px" }}
-                      >
+                      <button type="button" onClick={handleUpload} style={{ marginBottom: "10px" }}>
                         Upload Image
                       </button>
-
-                      {uploadedImageUrl && (
+                      {(uploadedImageUrl || editData.imageUrl || about.imageUrl) && (
                         <div style={{ marginBottom: "10px" }}>
-                          <p style={{ color: "green", fontWeight: "bold" }}>✅ Image uploaded successfully!</p>
-                          <p>Image URL (automatically set):</p>
+                          <label>Image URL</label>
                           <input
-                            value={uploadedImageUrl}
-                            onChange={(e) => handleChange("imageUrl", e.target.value)}
-                            placeholder="Image URL"
-                            style={{ width: "100%", padding: "5px", backgroundColor: "#f0f8ff" }}
-                            readOnly
-                          />
-                          <img 
-                            src={uploadedImageUrl} 
-                            alt="Uploaded" 
-                            width="200" 
-                            style={{ borderRadius: "10px", marginTop: "10px", border: "2px solid green" }}
-                          />
-                        </div>
-                      )}
-
-                      {editData.imageUrl && !uploadedImageUrl && (
-                        <div style={{ marginBottom: "10px" }}>
-                          <label>Current Image URL:</label>
-                          <input
-                            value={editData.imageUrl || ""}
-                            onChange={(e) => handleChange("imageUrl", e.target.value)}
+                            value={uploadedImageUrl || (editId === about.id ? (editData.imageUrl || "") : (about.imageUrl || ""))}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (editId !== about.id) {
+                                setEditId(about.id);
+                                setEditData({ ...about, imageUrl: value });
+                              } else {
+                                handleChange("imageUrl", value);
+                              }
+                            }}
                             placeholder="Image URL"
                             style={{ width: "100%", padding: "5px" }}
                           />
-                          {editData.imageUrl && (
-                            <img 
-                              src={editData.imageUrl} 
-                              alt="Current" 
-                              width="200" 
-                              style={{ borderRadius: "10px", marginTop: "10px" }}
-                            />
-                          )}
+                          <img
+                            src={uploadedImageUrl || editData.imageUrl || about.imageUrl}
+                            alt="About"
+                            width="200"
+                            style={{ borderRadius: "10px", marginTop: "10px" }}
+                          />
                         </div>
                       )}
                     </div>
-
                     <div className="action-buttons">
-                      <button onClick={() => handleSave("blogs", blog.id)}>
-                        Save
-                      </button>
-                      <button
-                        onClick={() => handleDelete("blogs", blog.id)}
-                        className="delete-btn"
-                      >
-                        Delete
-                      </button>
+                      <button onClick={async () => {
+                        if (!about) return;
+                        await handleSave("about", about.id);
+                        setAbout({ ...about, ...editData });
+                      }}>Save</button>
                     </div>
-                  </>
+                  </div>
                 ) : (
-                  <>
-                    <div style={{ marginBottom: "10px" }}>
-                      <h4>{blog.title}</h4>
-                      <p style={{ fontSize: "14px", color: "#666" }}>
-                        {blog.content?.substring(0, 100)}...
-                      </p>
-                      {blog.imageUrl && (
-                        <img 
-                          src={blog.imageUrl} 
-                          alt="Blog" 
-                          width="150" 
-                          style={{ borderRadius: "5px", marginTop: "10px" }}
-                        />
-                      )}
-                      <p style={{ fontSize: "12px", color: "#999", marginTop: "5px" }}>
-                        Order: {blog.order} | Created: {new Date(blog.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="action-buttons">
-                      <button
-                        onClick={() => {
-                          setEditId(blog.id);
-                          setEditData(blog);
-                          setUploadedImageUrl("");
-                          setPreview("");
-                        }}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete("blogs", blog.id)}
-                        className="delete-btn"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </>
+                  <p>No About content yet. Click "Create About" to add it.</p>
                 )}
               </div>
-            ))}
-          </div>
+            )}
+          </main>
         </div>
       )}
     </div>
