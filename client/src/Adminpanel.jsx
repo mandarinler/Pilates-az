@@ -27,6 +27,8 @@ const AdminPanel = () => {
   const [whys, setWhys] = useState([]);
   const [about, setAbout] = useState(null);
   const [contact, setContact] = useState(null);
+  const [hero, setHero] = useState(null);
+  const [mediaLibrary, setMediaLibrary] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editId, setEditId] = useState(null);
   const [editData, setEditData] = useState({});
@@ -83,6 +85,8 @@ const AdminPanel = () => {
         const whySnap = await getDocs(collection(db, "why"));
         const aboutSnap = await getDocs(collection(db, "about"));
         const contactSnap = await getDocs(collection(db, "contact"));
+        const heroSnap = await getDocs(collection(db, "hero"));
+        const mediaSnap = await getDocs(collection(db, "mediaLibrary"));
         setTrainers(trainerSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
         setPackages(packageSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
         setBlogs(blogSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
@@ -95,6 +99,11 @@ const AdminPanel = () => {
           ? { id: contactSnap.docs[0].id, ...contactSnap.docs[0].data() }
           : null;
         setContact(migrateContact(contactDoc));
+        const heroDoc = heroSnap.docs[0]
+          ? { id: heroSnap.docs[0].id, ...heroSnap.docs[0].data() }
+          : null;
+        setHero(heroDoc);
+        setMediaLibrary(mediaSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
         setLoading(false);
       } catch (err) {
         console.error("Error fetching data:", err);
@@ -229,6 +238,8 @@ const AdminPanel = () => {
         setBlogs(blogs.map((b) => (b.id === id ? dataToSave : b)));
       } else if (type === "why") {
         setWhys(whys.map((w) => (w.id === id ? dataToSave : w)));
+      } else if (type === "hero") {
+        setHero({ ...(hero || {}), ...dataToSave, id });
       }
     } catch (err) {
       console.error("Error saving data:", err);
@@ -300,6 +311,13 @@ const AdminPanel = () => {
           text: "Write about the company's history and mission here...",
           imageUrl: "",
         };
+      } else if (type === "hero") {
+        newItem = {
+          mediaType: "video",
+          mediaUrl: "https://www.st-pilates.az/itexpress.az/Pilates_1.mp4",
+          title: "ST Pilates'ə Xoş Gəlmisiniz",
+          subtitle: "Bədəninizə və sağlamlığınıza dəyər verin",
+        };
       } else if (type === "contact") {
         newItem = {
           logoUrl: "",
@@ -336,6 +354,9 @@ const AdminPanel = () => {
       } else if (type === "contact") {
         const created = { id: docRef.id, ...newItem };
         setContact(created);
+      } else if (type === "hero") {
+        const created = { id: docRef.id, ...newItem };
+        setHero(created);
       }
       setEditId(docRef.id);
       setEditData({ id: docRef.id, ...newItem });
@@ -428,6 +449,12 @@ const AdminPanel = () => {
               Packages
             </button>
             <button
+              className={`nav-item ${selectedSection === "hero" ? "active" : ""}`}
+              onClick={() => setSelectedSection("hero")}
+            >
+              Hero
+            </button>
+            <button
               className={`nav-item ${selectedSection === "trainers" ? "active" : ""}`}
               onClick={() => setSelectedSection("trainers")}
             >
@@ -469,6 +496,132 @@ const AdminPanel = () => {
             </button>
           </aside>
           <main className="content">
+            {selectedSection === "hero" && (
+              <div className="admin-card">
+                <div className="card-header">
+                  <h2>Hero</h2>
+                  <button onClick={() => !hero && handleCreate("hero")} className="create-btn">
+                    {hero ? "" : "Create Hero"}
+                  </button>
+                </div>
+                {hero ? (
+                  <div className="data-item">
+                    <label>Title</label>
+                    <input
+                      value={editId === hero.id ? (editData.title || "") : (hero.title || "")}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (editId !== hero.id) { setEditId(hero.id); setEditData({ ...hero, title: value }); }
+                        else { handleChange("title", value); }
+                      }}
+                    />
+                    <label>Subtitle</label>
+                    <input
+                      value={editId === hero.id ? (editData.subtitle || "") : (hero.subtitle || "")}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (editId !== hero.id) { setEditId(hero.id); setEditData({ ...hero, subtitle: value }); }
+                        else { handleChange("subtitle", value); }
+                      }}
+                    />
+                    <label>Media Type</label>
+                    <select
+                      value={editId === hero.id ? (editData.mediaType || "video") : (hero.mediaType || "video")}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (editId !== hero.id) { setEditId(hero.id); setEditData({ ...hero, mediaType: value }); }
+                        else { handleChange("mediaType", value); }
+                      }}
+                    >
+                      <option value="video">Video</option>
+                      <option value="image">Image</option>
+                    </select>
+
+                    <div className="image-upload-section">
+                      <label>{(editId === hero.id ? editData.mediaType : hero.mediaType) === "image" ? "Image" : "Video"} Upload</label>
+                      <input type="file" accept={(editId === hero.id ? editData.mediaType : hero.mediaType) === "image" ? "image/*" : "video/*"} onChange={handleFileChange} style={{ marginBottom: "10px" }} />
+                      {preview && (editId === hero.id ? (editData.mediaType || "video") : (hero.mediaType || "video")) === "image" && (
+                        <img src={preview} alt="Preview" width="200" style={{ borderRadius: "10px", marginBottom: "10px", display: "block" }} />
+                      )}
+                      <button type="button" onClick={async () => {
+                        if (!selectedImage) { alert("Please select a file first!"); return; }
+                        alert("Uploading...");
+                        const url = await uploadToCloudinary(selectedImage);
+                        setUploadedImageUrl(url);
+                        const field = ((editId === hero.id ? editData.mediaType : hero.mediaType) === "image") ? "mediaUrl" : "mediaUrl";
+                        if (editId !== hero.id) { setEditId(hero.id); setEditData({ ...hero, [field]: url }); }
+                        else { setEditData({ ...editData, [field]: url }); }
+                        alert("Uploaded successfully!");
+                      }} style={{ marginBottom: "10px" }}>Upload</button>
+
+                      <label>Media URL</label>
+                      <input
+                        value={uploadedImageUrl || (editId === hero.id ? (editData.mediaUrl || "") : (hero.mediaUrl || ""))}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (editId !== hero.id) { setEditId(hero.id); setEditData({ ...hero, mediaUrl: value }); }
+                          else { handleChange("mediaUrl", value); }
+                        }}
+                        placeholder={(editId === hero.id ? editData.mediaType : hero.mediaType) === "image" ? "Image URL" : "Video URL"}
+                        style={{ width: "100%", padding: "5px" }}
+                      />
+
+                      {/* Saved media reuse - thumbnail picker */}
+                      {mediaLibrary && mediaLibrary.length > 0 && (
+                        <div style={{ marginTop: 10 }}>
+                          <label>Saved Media</label>
+                          <div className="media-library-grid">
+                            {mediaLibrary.map((m) => (
+                              <div key={m.id} className="media-item">
+                                <div className="media-thumb">
+                                  {m.type === 'image' ? (
+                                    <img src={m.url} alt="saved" />
+                                  ) : (
+                                    <video src={m.url} muted playsInline />
+                                  )}
+                                </div>
+                                <div className="media-meta">
+                                  <span className={`tag ${m.type}`}>{m.type}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (editId !== hero.id) { setEditId(hero.id); setEditData({ ...hero, mediaUrl: m.url, mediaType: m.type }); }
+                                      else { setEditData({ ...editData, mediaUrl: m.url, mediaType: m.type }); }
+                                    }}
+                                  >
+                                    Use
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <button type="button" onClick={async () => {
+                        const url = (editId === hero.id ? editData.mediaUrl : hero.mediaUrl) || uploadedImageUrl;
+                        const type = (editId === hero.id ? editData.mediaType : hero.mediaType) || 'video';
+                        if (!url) { alert('No media URL to save'); return; }
+                        try {
+                          const docRef = await addDoc(collection(db, 'mediaLibrary'), { url, type, createdAt: Date.now() });
+                          setMediaLibrary([{ id: docRef.id, url, type }, ...mediaLibrary]);
+                          alert('Saved to library');
+                        } catch (e) {
+                          console.error(e);
+                          alert('Failed to save to library');
+                        }
+                      }} style={{ marginTop: 10 }}>Save current to Library</button>
+                    </div>
+
+                    <div className="action-buttons">
+                      <button onClick={async () => { if (!hero) return; await handleSave("hero", hero.id); setHero({ ...hero, ...editData }); }}>Save</button>
+                    </div>
+                  </div>
+                ) : (
+                  <p>No Hero content yet. Click "Create Hero" to add it.</p>
+                )}
+              </div>
+            )}
             {selectedSection === "packages" && (
           <div className="admin-card">
             <div className="card-header">

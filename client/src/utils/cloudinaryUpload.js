@@ -6,13 +6,12 @@ export const uploadToCloudinary = async (file) => {
   formData.append('folder', 'pilates-uploads');
 
   try {
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/dvppsykcl/image/upload`,
-      {
-        method: 'POST',
-        body: formData,
-      }
-    );
+    const isVideo = file && file.type && file.type.startsWith('video/');
+    const resourceType = isVideo ? 'video' : 'image';
+    const response = await fetch(`https://api.cloudinary.com/v1_1/dvppsykcl/${resourceType}/upload`, {
+      method: 'POST',
+      body: formData,
+    });
 
     if (!response.ok) {
       throw new Error('Upload failed');

@@ -28,6 +28,7 @@ export default function Body() {
   const [whys, setWhys] = useState([]);
   const [about, setAbout] = useState(null);
   const [contact, setContact] = useState(null);
+  const [hero, setHero] = useState(null);
   // Trainers
   useEffect(() => {
     const fetchTrainers = async () => {
@@ -122,22 +123,43 @@ export default function Body() {
     fetchContact();
   }, []);
 
+  // Hero (single doc)
+  useEffect(() => {
+    const fetchHero = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "hero"));
+        const doc = querySnapshot.docs[0]
+          ? { id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() }
+          : null;
+        setHero(doc);
+      } catch (error) {
+        console.error("Error fetching hero:", error);
+      }
+    };
+    fetchHero();
+  }, []);
+
   return (
     <main>
       {/* Hero Section */}
       <section id="home" className="hero-section">
-        <video
-          className="hero-video"
-          autoPlay
-          loop
-          muted
-          playsInline
-          src="https://www.st-pilates.az/itexpress.az/Pilates_1.mp4"
-        />
+        {hero?.mediaType === "image" && hero?.mediaUrl ? (
+          <img className="hero-video" src={hero.mediaUrl} alt="Hero" />
+        ) : null}
+        {hero?.mediaType !== "image" && hero?.mediaUrl ? (
+          <video
+            className="hero-video"
+            autoPlay
+            loop
+            muted
+            playsInline
+            src={hero.mediaUrl}
+          />
+        ) : null}
         <div className="hero-overlay">
           <div className="hero-text-bg">
-            <h1>ST Pilates'ə Xoş Gəlmisiniz</h1>
-            <p>Bədəninizə və sağlamlığınıza dəyər verin</p>
+            <h1>{hero?.title || "ST Pilates'ə Xoş Gəlmisiniz"}</h1>
+            <p>{hero?.subtitle || "Bədəninizə və sağlamlığınıza dəyər verin"}</p>
           </div>
         </div>
       </section>
