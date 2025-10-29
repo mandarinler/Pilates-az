@@ -432,6 +432,19 @@
   gap: 8px;
 }
 
+/* Make media action buttons a bit smaller for more consistent layout */
+.media-meta button {
+  padding: 6px 10px !important;
+  font-size: 12px !important;
+  border-radius: 6px;
+}
+
+/* Keep tags compact */
+.media-meta .tag {
+  font-size: 11px;
+  padding: 4px 8px;
+}
+
 .media-meta .tag {
   font-size: 12px;
   padding: 4px 10px;

@@ -8,7 +8,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "./firebase";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const sections = [
   { id: "home", title: "Əsas Səhifə" },
@@ -29,6 +29,8 @@ export default function Body() {
   const [about, setAbout] = useState(null);
   const [contact, setContact] = useState(null);
   const [hero, setHero] = useState(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const slideTimerRef = useRef(null);
   // Trainers
   useEffect(() => {
     const fetchTrainers = async () => {
@@ -139,14 +141,55 @@ export default function Body() {
     fetchHero();
   }, []);
 
+  // Handle slideshow rotation
+  useEffect(() => {
+    // clear any previous timer
+    if (slideTimerRef.current) {
+      clearInterval(slideTimerRef.current);
+      slideTimerRef.current = null;
+    }
+
+    const isSlideshow = hero?.mediaType === "slideshow" && Array.isArray(hero?.images) && hero.images.length > 1;
+    if (!isSlideshow) {
+      setCurrentSlide(0);
+      return;
+    }
+
+    const interval = Number(hero?.slideInterval) || 3500; // default 3.5s
+    slideTimerRef.current = setInterval(() => {
+      setCurrentSlide((prev) => {
+        const total = hero.images.length;
+        return (prev + 1) % total;
+      });
+    }, Math.max(1500, interval));
+
+    return () => {
+      if (slideTimerRef.current) {
+        clearInterval(slideTimerRef.current);
+        slideTimerRef.current = null;
+      }
+    };
+  }, [hero]);
+
   return (
     <main>
       {/* Hero Section */}
       <section id="home" className="hero-section">
+        {/* Slideshow Mode */}
+        {hero?.mediaType === "slideshow" && Array.isArray(hero?.images) && hero.images.length > 0 ? (
+          <img
+            key={hero.images[currentSlide] || "slideshow"}
+            className="hero-video hero-fade"
+            src={hero.images[currentSlide]}
+            alt="Hero Slideshow"
+          />
+        ) : null}
+        {/* Single Image Mode */}
         {hero?.mediaType === "image" && hero?.mediaUrl ? (
           <img className="hero-video" src={hero.mediaUrl} alt="Hero" />
         ) : null}
-        {hero?.mediaType !== "image" && hero?.mediaUrl ? (
+        {/* Video Mode (default) */}
+        {hero && hero.mediaType !== "image" && hero.mediaType !== "slideshow" && hero.mediaUrl ? (
           <video
             className="hero-video"
             autoPlay

@@ -323,8 +323,10 @@ const AdminPanel = () => {
         };
       } else if (type === "hero") {
         newItem = {
-          mediaType: "video",
+          mediaType: "video", // "video" | "image" | "slideshow"
           mediaUrl: "https://www.st-pilates.az/itexpress.az/Pilates_1.mp4",
+          images: [],
+          slideInterval: 3500,
           title: "ST Pilates'ə Xoş Gəlmisiniz",
           subtitle: "Bədəninizə və sağlamlığınıza dəyər verin",
         };
@@ -606,6 +608,7 @@ const AdminPanel = () => {
                     >
                       <option value="video">Video</option>
                       <option value="image">Şəkil</option>
+                      <option value="slideshow">Slayd (Çoxlu Şəkil)</option>
                     </select>
 
                     <div className="image-upload-section">
@@ -614,6 +617,10 @@ const AdminPanel = () => {
                           ? editData.mediaType
                           : hero.mediaType) === "image"
                           ? "Şəkil"
+                          : (editId === hero.id
+                              ? editData.mediaType
+                              : hero.mediaType) === "slideshow"
+                          ? "Slayd Şəkil"
                           : "Video"}{" "}
                         Yüklə
                       </label>
@@ -624,15 +631,21 @@ const AdminPanel = () => {
                             ? editData.mediaType
                             : hero.mediaType) === "image"
                             ? "image/*"
+                            : (editId === hero.id
+                                ? editData.mediaType
+                                : hero.mediaType) === "slideshow"
+                            ? "image/*"
                             : "video/*"
                         }
                         onChange={handleFileChange}
                         style={{ marginBottom: "10px" }}
                       />
                       {preview &&
-                        (editId === hero.id
-                          ? editData.mediaType || "video"
-                          : hero.mediaType || "video") === "image" && (
+                        ["image", "slideshow"].includes(
+                          (editId === hero.id
+                            ? editData.mediaType || "video"
+                            : hero.mediaType || "video")
+                        ) && (
                           <img
                             src={preview}
                             alt="Preview"
@@ -654,24 +667,29 @@ const AdminPanel = () => {
                           alert("Uploading...");
                           const url = await uploadToCloudinary(selectedImage);
                           setUploadedImageUrl(url);
-                          const field =
-                            (editId === hero.id
-                              ? editData.mediaType
-                              : hero.mediaType) === "image"
-                              ? "mediaUrl"
-                              : "mediaUrl";
-                          if (editId !== hero.id) {
-                            setEditId(hero.id);
-                            setEditData({ ...hero, [field]: url });
+                          const currentType = (editId === hero.id ? editData.mediaType : hero.mediaType) || "video";
+                          if (currentType === "slideshow") {
+                            const base = editId === hero.id ? editData : hero;
+                            const images = Array.isArray(base.images) ? [...base.images, url] : [url];
+                            if (editId !== hero.id) {
+                              setEditId(hero.id);
+                              setEditData({ ...base, images });
+                            } else {
+                              setEditData({ ...editData, images });
+                            }
                           } else {
-                            setEditData({ ...editData, [field]: url });
+                            const field = "mediaUrl";
+                            if (editId !== hero.id) {
+                              setEditId(hero.id);
+                              setEditData({ ...hero, [field]: url });
+                            } else {
+                              setEditData({ ...editData, [field]: url });
+                            }
                           }
 
                           // Automatically save to library
-                          const type =
-                            (editId === hero.id
-                              ? editData.mediaType
-                              : hero.mediaType) || "video";
+                          let type = (editId === hero.id ? editData.mediaType : hero.mediaType) || "video";
+                          if (type === "slideshow") type = "image"; // store uploaded slideshow images as images in library
                           try {
                             const docRef = await addDoc(
                               collection(db, "mediaLibrary"),
@@ -693,43 +711,181 @@ const AdminPanel = () => {
                       >
                         Yüklə
                       </button>
+                      {(editId === hero.id ? editData.mediaType : hero.mediaType) !== "slideshow" && (
+                        <>
+                          <label>Media URL</label>
+                          <input
+                            value={
+                              uploadedImageUrl ||
+                              (editId === hero.id
+                                ? editData.mediaUrl || ""
+                                : hero.mediaUrl || "")
+                            }
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (editId !== hero.id) {
+                                setEditId(hero.id);
+                                setEditData({ ...hero, mediaUrl: value });
+                              } else {
+                                handleChange("mediaUrl", value);
+                              }
+                            }}
+                            placeholder={
+                              (editId === hero.id
+                                ? editData.mediaType
+                                : hero.mediaType) === "image"
+                                ? "Image URL"
+                                : "Video URL"
+                            }
+                            style={{ width: "100%", padding: "5px" }}
+                          />
+                        </>
+                      )}
 
-                      <label>Media URL</label>
-                      <input
-                        value={
-                          uploadedImageUrl ||
-                          (editId === hero.id
-                            ? editData.mediaUrl || ""
-                            : hero.mediaUrl || "")
-                        }
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (editId !== hero.id) {
-                            setEditId(hero.id);
-                            setEditData({ ...hero, mediaUrl: value });
-                          } else {
-                            handleChange("mediaUrl", value);
-                          }
-                        }}
-                        placeholder={
-                          (editId === hero.id
-                            ? editData.mediaType
-                            : hero.mediaType) === "image"
-                            ? "Image URL"
-                            : "Video URL"
-                        }
-                        style={{ width: "100%", padding: "5px" }}
-                      />
+                      {(editId === hero.id ? editData.mediaType : hero.mediaType) === "slideshow" && (
+                        <div style={{ marginTop: 12 }}>
+                          <label>Slayd Intervalı (ms)</label>
+                          <input
+                            type="number"
+                            value={
+                              editId === hero.id
+                                ? (editData.slideInterval ?? 3500)
+                                : (hero.slideInterval ?? 3500)
+                            }
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value || 0, 10);
+                              if (editId !== hero.id) {
+                                setEditId(hero.id);
+                                setEditData({ ...hero, slideInterval: value });
+                              } else {
+                                handleChange("slideInterval", value);
+                              }
+                            }}
+                            style={{ width: "100%", padding: "5px" }}
+                            min={1000}
+                            step={100}
+                          />
+
+                          <div style={{ marginTop: 12 }}>
+                            <label>Slayd Şəkilləri</label>
+                            <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                              <input
+                                type="text"
+                                placeholder="Şəkil URL əlavə et və + bas"
+                                value={editData._tempSlideUrl || ""}
+                                onChange={(e) => {
+                                  if (editId !== hero.id) {
+                                    setEditId(hero.id);
+                                    setEditData({ ...hero, _tempSlideUrl: e.target.value });
+                                  } else {
+                                    setEditData({ ...editData, _tempSlideUrl: e.target.value });
+                                  }
+                                }}
+                                style={{ flex: 1, padding: "5px" }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const url = (editId === hero.id ? editData._tempSlideUrl : hero._tempSlideUrl) || "";
+                                  if (!url) return;
+                                  const base = editId === hero.id ? editData : hero;
+                                  const images = Array.isArray(base.images) ? [...base.images, url] : [url];
+                                  if (editId !== hero.id) {
+                                    setEditId(hero.id);
+                                    setEditData({ ...base, images, _tempSlideUrl: "" });
+                                  } else {
+                                    setEditData({ ...editData, images, _tempSlideUrl: "" });
+                                  }
+                                }}
+                                className="add-btn"
+                              >
+                                +
+                              </button>
+                            </div>
+                            <div className="media-library-grid">
+                              {(editId === hero.id ? (editData.images || []) : (hero.images || [])).map((imgUrl, idx) => (
+                                <div key={idx} className="media-item">
+                                  <div className="media-thumb">
+                                    <img src={imgUrl} alt={`slide-${idx}`} />
+                                  </div>
+                                  <div className="media-meta" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                                    <span className="tag image">#{idx + 1}</span>
+                                    <button
+                                      type="button"
+                                      className="remove-btn"
+                                      onClick={() => {
+                                        const base = editId === hero.id ? editData : hero;
+                                        const images = (base.images || []).filter((_, i) => i !== idx);
+                                        if (editId !== hero.id) {
+                                          setEditId(hero.id);
+                                          setEditData({ ...base, images });
+                                        } else {
+                                          setEditData({ ...editData, images });
+                                        }
+                                      }}
+                                    >
+                                      Sil
+                                    </button>
+                                    {idx > 0 && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const base = editId === hero.id ? editData : hero;
+                                          const images = [...(base.images || [])];
+                                          const tmp = images[idx - 1];
+                                          images[idx - 1] = images[idx];
+                                          images[idx] = tmp;
+                                          if (editId !== hero.id) {
+                                            setEditId(hero.id);
+                                            setEditData({ ...base, images });
+                                          } else {
+                                            setEditData({ ...editData, images });
+                                          }
+                                        }}
+                                      >
+                                        ↑
+                                      </button>
+                                    )}
+                                    {((editId === hero.id ? (editData.images || []) : (hero.images || [])).length - 1) > idx && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const base = editId === hero.id ? editData : hero;
+                                          const images = [...(base.images || [])];
+                                          const tmp = images[idx + 1];
+                                          images[idx + 1] = images[idx];
+                                          images[idx] = tmp;
+                                          if (editId !== hero.id) {
+                                            setEditId(hero.id);
+                                            setEditData({ ...base, images });
+                                          } else {
+                                            setEditData({ ...editData, images });
+                                          }
+                                        }}
+                                      >
+                                        ↓
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
 
                       {/* Saved media reuse - thumbnail picker */}
                       {mediaLibrary && mediaLibrary.length > 0 && (
                         <div style={{ marginTop: 10 }}>
                           <label>Library-də saxlanan Media</label>
                           <div className="media-library-grid">
-                            {mediaLibrary.map((m) => (
+                            {(((editId === hero.id ? editData.mediaType : hero.mediaType) === "slideshow")
+                              ? mediaLibrary.filter((m) => m.type === "image" || m.type === "slideshow")
+                              : mediaLibrary
+                            ).map((m) => (
                               <div key={m.id} className="media-item">
                                 <div className="media-thumb">
-                                  {m.type === "image" ? (
+                                  {m.type === "image" || m.type === "slideshow" ? (
                                     <img src={m.url} alt="saved" />
                                   ) : (
                                     <video src={m.url} muted playsInline />
@@ -739,59 +895,92 @@ const AdminPanel = () => {
                                   <span className={`tag ${m.type}`}>
                                     {m.type}
                                   </span>
-                                  <div
+                                   <div
                                     style={{
                                       display: "flex",
                                       gap: "8px",
                                       alignItems: "center",
                                     }}
                                   >
-                                    <button
-                                      type="button"
-                                      onClick={async () => {
-                                        const updatedData = {
-                                          mediaUrl: m.url,
-                                          mediaType: m.type,
-                                        };
-                                        if (editId !== hero.id) {
-                                          setEditId(hero.id);
-                                          setEditData({
-                                            ...hero,
-                                            ...updatedData,
-                                          });
-                                        } else {
-                                          setEditData({
-                                            ...editData,
-                                            ...updatedData,
-                                          });
-                                        }
-                                        // Auto-save
-                                        try {
-                                          await updateDoc(
-                                            doc(db, "hero", hero.id),
-                                            updatedData
-                                          );
-                                          setHero({ ...hero, ...updatedData });
-                                          alert(
-                                            "Media uğurla tətbiq edildi və yadda saxlanıldı!"
-                                          );
-                                        } catch (err) {
-                                          console.error("Error saving:", err);
-                                          alert("Error saving media");
-                                        }
-                                      }}
-                                      style={{
-                                        background: "#16a34a",
-                                        color: "#fff",
-                                        padding: "6px 12px",
-                                        fontSize: "13px",
-                                        border: "none",
-                                        borderRadius: "6px",
-                                        cursor: "pointer",
-                                      }}
-                                    >
-                                      Tətbiq et
-                                    </button>
+                                    { !(((editId === hero.id ? editData.mediaType : hero.mediaType) === "slideshow") && (m.type === "image" || m.type === "slideshow")) && (
+                                      <button
+                                        type="button"
+                                        onClick={async () => {
+                                          const currentType = (editId === hero.id ? editData.mediaType : hero.mediaType) || "video";
+                                          if (currentType === "slideshow") {
+                                            // add to images list
+                                            const base = editId === hero.id ? editData : hero;
+                                            const images = Array.isArray(base.images) ? [...base.images, m.url] : [m.url];
+                                            if (editId !== hero.id) {
+                                              setEditId(hero.id);
+                                              setEditData({ ...base, images });
+                                            } else {
+                                              setEditData({ ...editData, images });
+                                            }
+                                          } else {
+                                            const updatedData = {
+                                              mediaUrl: m.url,
+                                              mediaType: m.type === "slideshow" ? "image" : m.type,
+                                            };
+                                            if (editId !== hero.id) {
+                                              setEditId(hero.id);
+                                              setEditData({
+                                                ...hero,
+                                                ...updatedData,
+                                              });
+                                            } else {
+                                              setEditData({
+                                                ...editData,
+                                                ...updatedData,
+                                              });
+                                            }
+                                            // Auto-save
+                                            try {
+                                              await updateDoc(
+                                                doc(db, "hero", hero.id),
+                                                updatedData
+                                              );
+                                              setHero({ ...hero, ...updatedData });
+                                              alert(
+                                                "Media uğurla tətbiq edildi və yadda saxlanıldı!"
+                                              );
+                                            } catch (err) {
+                                              console.error("Error saving:", err);
+                                              alert("Error saving media");
+                                            }
+                                          }
+                                        }}
+                                        style={{
+                                          background: "#16a34a",
+                                          color: "#fff",
+                                          padding: "6px 12px",
+                                          fontSize: "13px",
+                                          border: "none",
+                                          borderRadius: "6px",
+                                          cursor: "pointer",
+                                        }}
+                                      >
+                                        Tətbiq et
+                                      </button>
+                                    )}
+                                    {(m.type === "image") && ((editId === hero.id ? editData.mediaType : hero.mediaType) === "slideshow") && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const base = editId === hero.id ? editData : hero;
+                                          const images = Array.isArray(base.images) ? [...base.images, m.url] : [m.url];
+                                          if (editId !== hero.id) {
+                                            setEditId(hero.id);
+                                            setEditData({ ...base, images });
+                                          } else {
+                                            setEditData({ ...editData, images });
+                                          }
+                                        }}
+                                         style={{ padding: "6px 10px" }}
+                                      >
+                                        Slayda əlavə et
+                                      </button>
+                                    )}
                                     <button
                                       type="button"
                                       onClick={async () => {
@@ -838,6 +1027,15 @@ const AdminPanel = () => {
                         </div>
                       )}
                     </div>
+
+                    {/* Show quick preview for slideshow when editing */}
+                    {(editId === hero.id ? editData.mediaType : hero.mediaType) === "slideshow" && (
+                      <div style={{ marginTop: 12 }}>
+                        <small style={{ color: "#888" }}>
+                          Slaydda { (editId === hero.id ? (editData.images || []) : (hero.images || [])).length } şəkil var
+                        </small>
+                      </div>
+                    )}
 
                     <div className="action-buttons">
                       <button
