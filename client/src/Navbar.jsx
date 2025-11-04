@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./Navbar.css";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "./firebase";
 
 const sections = [
   { id: "home", label: "Əsas Səhifə" },
@@ -14,6 +16,7 @@ const sections = [
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState("home");
+  const [logoUrl, setLogoUrl] = useState("");
 
   useEffect(() => {
     const offset = window.innerHeight / 4;
@@ -36,6 +39,15 @@ export default function Navbar() {
     };
   }, []);
 
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, "contact"), (snap) => {
+      const docs = snap.docs.map((d) => d.data());
+      const docWithLogo = docs.find((d) => typeof d?.logoUrl === "string" && d.logoUrl);
+      if (docWithLogo) setLogoUrl(docWithLogo.logoUrl);
+    });
+    return () => unsub();
+  }, []);
+
   const handleClick = (id) => {
     setOpen(false);
     const el = document.getElementById(id);
@@ -45,7 +57,7 @@ export default function Navbar() {
     <nav className="navbar">
       <div className="navbar-inner">
         <div className="brand">
-          <img src="https://i.hizliresim.com/91xwdfz.png" alt="Logo" />
+          <img src={logoUrl || "https://i.hizliresim.com/91xwdfz.png"} alt="Logo" />
         </div>
         <div className="links-desktop">
           {sections.map((s) => (

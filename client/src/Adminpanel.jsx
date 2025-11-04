@@ -6,6 +6,8 @@ import {
   doc,
   addDoc,
   deleteDoc,
+  getDoc,
+  setDoc,
 } from "firebase/firestore";
 import {
   onAuthStateChanged,
@@ -35,8 +37,15 @@ const AdminPanel = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [preview, setPreview] = useState("");
   const [uploadedImageUrl, setUploadedImageUrl] = useState("");
-  const [selectedSection, setSelectedSection] = useState("packages");
+  const [selectedSection, setSelectedSection] = useState("hero");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [flash, setFlash] = useState(null); // { type: 'success' | 'error', text: string }
+
+  useEffect(() => {
+    if (!flash) return;
+    const t = setTimeout(() => setFlash(null), 5000);
+    return () => clearTimeout(t);
+  }, [flash]);
   const normalizeArray = (v) => (Array.isArray(v) ? v : []);
   const migrateContact = (docData) => {
     if (!docData) return null;
@@ -225,7 +234,18 @@ const AdminPanel = () => {
   // Save to Firebase
   const handleSave = async (type, id) => {
     try {
+      if (!id) {
+        setFlash({ type: "error", text: "Kontakt sənədi tapılmadı" });
+        return;
+      }
       let dataToSave = { ...editData };
+      // Ensure contact saves persist even if only some fields were edited
+      if (type === "contact") {
+        const base = contact && id === contact.id ? contact : {};
+        const merged = { ...base, ...editData };
+        delete merged.id;
+        dataToSave = merged;
+      }
       if (type === "trainers" && editData.socials) {
         const simpleSocials = {};
         Object.keys(editData.socials).forEach((socialId) => {
@@ -237,7 +257,17 @@ const AdminPanel = () => {
         dataToSave.socials = simpleSocials;
       }
 
-      await updateDoc(doc(db, type, id), dataToSave);
+      if (type === "contact") {
+        const ref = doc(db, type, id);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          await updateDoc(ref, dataToSave);
+        } else {
+          await setDoc(ref, dataToSave, { merge: true });
+        }
+      } else {
+        await updateDoc(doc(db, type, id), dataToSave);
+      }
       setEditId(null);
 
       if (type === "trainers") {
@@ -250,9 +280,13 @@ const AdminPanel = () => {
         setWhys(whys.map((w) => (w.id === id ? dataToSave : w)));
       } else if (type === "hero") {
         setHero({ ...(hero || {}), ...dataToSave, id });
+      } else if (type === "contact") {
+        setContact({ ...(contact || {}), ...dataToSave, id });
       }
+      setFlash({ type: "success", text: "Uğurla yadda saxlandı!" });
     } catch (err) {
       console.error("Error saving data:", err);
+      setFlash({ type: "error", text: `Yadda saxlanılmadı: ${err?.message || 'Naməlum xəta'}` });
     }
   };
 
@@ -417,8 +451,14 @@ const AdminPanel = () => {
       const imageUrl = await uploadToCloudinary(selectedImage);
 
       setUploadedImageUrl(imageUrl);
-      // Automatically update the imageUrl field in editData
-      setEditData({ ...editData, imageUrl });
+      // Automatically update correct field based on section
+      if (selectedSection === "contact" && contact) {
+        const base = editId === contact.id ? editData : contact;
+        if (editId !== contact.id) setEditId(contact.id);
+        setEditData({ ...base, logoUrl: imageUrl });
+      } else {
+        setEditData({ ...editData, imageUrl });
+      }
       alert("Şəkil uğurla yükləndi!");
     } catch (error) {
       console.error("Yüklənmə uğursuz oldu:", error);
@@ -468,6 +508,37 @@ const AdminPanel = () => {
           </button>
         </div>
       </div>
+      {flash && (
+        <div
+          style={{
+            position: "fixed",
+            top: 12,
+            right: 12,
+            zIndex: 9999,
+            background: flash.type === "success" ? "#16a34a" : "#dc2626",
+            color: "#fff",
+            padding: "10px 14px",
+            borderRadius: 8,
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+          }}
+        >
+          {flash.text}
+          <button
+            type="button"
+            onClick={() => setFlash(null)}
+            style={{
+              marginLeft: 10,
+              background: "transparent",
+              color: "#fff",
+              border: "none",
+              cursor: "pointer",
+              fontWeight: 600,
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {loading ? (
         <p>Loading...</p>
@@ -476,19 +547,45 @@ const AdminPanel = () => {
           <aside className={`sidebar ${isSidebarOpen ? "" : "collapsed"}`}>
             <button
               className={`nav-item ${
-                selectedSection === "packages" ? "active" : ""
-              }`}
-              onClick={() => setSelectedSection("packages")}
-            >
-              Paketlər
-            </button>
-            <button
-              className={`nav-item ${
                 selectedSection === "hero" ? "active" : ""
               }`}
               onClick={() => setSelectedSection("hero")}
             >
               Hero Bölməsi
+            </button>
+            <button
+              className={`nav-item ${
+                selectedSection === "about" ? "active" : ""
+              }`}
+              onClick={() => {
+                setSelectedSection("about");
+                resetImageStates();
+                if (about) {
+                  setEditId(about.id);
+                  setEditData(about);
+                } else {
+                  setEditId(null);
+                  setEditData({});
+                }
+              }}
+            >
+              Haqqımızda
+            </button>
+            <button
+              className={`nav-item ${
+                selectedSection === "why" ? "active" : ""
+              }`}
+              onClick={() => setSelectedSection("why")}
+            >
+              Xidmətlər
+            </button>
+            <button
+              className={`nav-item ${
+                selectedSection === "packages" ? "active" : ""
+              }`}
+              onClick={() => setSelectedSection("packages")}
+            >
+              Paketlər
             </button>
             <button
               className={`nav-item ${
@@ -508,37 +605,11 @@ const AdminPanel = () => {
             </button>
             <button
               className={`nav-item ${
-                selectedSection === "why" ? "active" : ""
-              }`}
-              onClick={() => setSelectedSection("why")}
-            >
-              Xidmətlər
-            </button>
-            <button
-              className={`nav-item ${
                 selectedSection === "contact" ? "active" : ""
               }`}
               onClick={() => setSelectedSection("contact")}
             >
               Kontakt
-            </button>
-            <button
-              className={`nav-item ${
-                selectedSection === "about" ? "active" : ""
-              }`}
-              onClick={() => {
-                setSelectedSection("about");
-                resetImageStates();
-                if (about) {
-                  setEditId(about.id);
-                  setEditData(about);
-                } else {
-                  setEditId(null);
-                  setEditData({});
-                }
-              }}
-            >
-              Haqqımızda
             </button>
           </aside>
           <main className="content">
@@ -1045,7 +1116,7 @@ const AdminPanel = () => {
                           setHero({ ...hero, ...editData });
                         }}
                       >
-                        Save
+                        Yadda Saxla
                       </button>
                     </div>
                   </div>
@@ -2028,8 +2099,12 @@ const AdminPanel = () => {
 
                     <div className="action-buttons">
                       <button
+                        type="button"
                         onClick={async () => {
-                          if (!contact) return;
+                          if (!contact) {
+                            setFlash({ type: "error", text: "Kontakt məlumatı tapılmadı" });
+                            return;
+                          }
                           await handleSave("contact", contact.id);
                           setContact({ ...contact, ...editData });
                         }}
