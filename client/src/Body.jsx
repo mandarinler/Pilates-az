@@ -13,7 +13,7 @@ import { useState, useEffect, useRef } from "react";
 const sections = [
   { id: "home", title: "Əsas Səhifə" },
   { id: "about", title: "Haqqımızda" },
-  { id: "why", title: "Niyə Biz" },
+  { id: "why", title: "Xidmətlərimiz" },
   { id: "packages", title: "Paketlər" },
   { id: "trainers", title: "Məşqçilər" },
   { id: "contact", title: "Əlaqə" },
@@ -221,7 +221,7 @@ export default function Body() {
       </section>
       {/* Why Pilates Section (dynamic) */}
       <section id="why" className="why-section">
-        <h2 className="why-title">Üstünlüklərimiz</h2>
+        <h2 className="why-title">Xidmətlərimiz</h2>
         <div className={`why-container two-col ${whys.length === 1 ? "single" : ""}`}>
           {whys.map((item) => (
             <div key={item.id} className="why-item">

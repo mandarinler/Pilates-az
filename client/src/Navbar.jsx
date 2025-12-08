@@ -3,10 +3,12 @@ import "./Navbar.css";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
 
+const NAV_HEIGHT = 72; // navbar height used to offset scroll positions
+
 const sections = [
   { id: "home", label: "Əsas Səhifə" },
   { id: "about", label: "Haqqımızda" },
-  { id: "why", label: "Niyə Biz" },
+  { id: "why", label: "Xidmətlərimiz" },
   { id: "packages", label: "Paketlər" },
   { id: "trainers", label: "Məşqçilər" },
   { id: "blogs", label: "Bloqlar" },
@@ -51,7 +53,10 @@ export default function Navbar() {
   const handleClick = (id) => {
     setOpen(false);
     const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (el) {
+      const top = el.offsetTop - NAV_HEIGHT;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
   };
   return (
     <nav className="navbar">
