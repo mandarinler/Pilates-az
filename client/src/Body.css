@@ -4,8 +4,7 @@ main {
 }
 
 .site-section {
-  min-height: 100vh;
-  padding: 60px 16px;
+  padding:16px;
   border-bottom: 1px solid #eee;
   display: flex;
   align-items: center;
@@ -265,6 +264,8 @@ main {
 .why-text p {
   font-size: 1.1rem;
   line-height: 1.4;
+  text-align: center;
+  white-space: pre-line;
 }
 
 @media (max-width: 768px) {
@@ -437,8 +438,8 @@ main {
 }
 .trainers-section {
   display: flex;
+  padding: 36px;
   flex-direction: column;
-  padding: 65px 20px;
   background: #111;
   text-align: center;
   user-select: none;
