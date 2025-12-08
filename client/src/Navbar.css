@@ -55,11 +55,11 @@
 }
 
 .nav-btn:hover {
-  color: darkred; 
+  color: var(--accent-gold); 
 }
 
 .nav-btn.active {
-  color: #b22222; 
+  color: var(--accent-gold); 
   font-weight: bold;
 }
 
@@ -133,7 +133,7 @@
 }
 
 .mobile-link.active {
-  color: #b22222;
+  color: var(--accent-gold);
   font-weight: bold;
 }
 

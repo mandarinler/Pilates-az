@@ -13,7 +13,7 @@
 .back-btn {
   background: #111;
   color: white;
-  border: 2px solid red;
+  border: 2px solid var(--accent-gold);
   padding: 12px 24px;
   border-radius: 8px;
   cursor: pointer;
@@ -27,9 +27,9 @@
 }
 
 .back-btn:hover {
-  background: red;
+  background: var(--accent-gold);
   transform: translateX(-5px);
-  box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
   border: 2px solid black;
 }
 
@@ -52,7 +52,7 @@
   width: 50px;
   height: 50px;
   border: 4px solid #111;
-  border-top: 4px solid red;
+  border-top: 4px solid var(--accent-gold);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 20px;
@@ -64,7 +64,7 @@
 }
 
 .blog-error h2 {
-  color: red;
+  color: var(--accent-gold);
   margin-bottom: 10px;
   font-size: 2rem;
 }
@@ -93,7 +93,7 @@
 .blog-article .blog-title {
   font-size: 2.8rem;
   font-weight: 700;
-  color: red;
+  color: var(--accent-gold);
   margin-bottom: 20px;
   line-height: 1.2;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
@@ -149,7 +149,7 @@
 
 .tag {
   background: #333;
-  color: red;
+  color: var(--accent-gold);
   padding: 8px 16px;
   border-radius: 25px;
   font-size: 0.95rem;
@@ -159,10 +159,10 @@
 }
 
 .tag:hover {
-  background: red;
+  background: var(--accent-gold);
   color: white;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(255, 0, 0, 0.3);
+  box-shadow: 0 4px 8px rgba(212, 175, 55, 0.3);
 }
 
 /* Responsive Design */
